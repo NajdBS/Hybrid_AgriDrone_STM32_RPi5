@@ -1,0 +1,13 @@
+/*
+ * KalmanRollPitch.h
+ *
+ *  Created on: Nov 15, 2025
+ *      Author: Najd Ben Saad
+ */
+
+#ifndef INC_KALMANROLLPITCH_H_
+#define INC_KALMANROLLPITCH_H_
+
+
+
+#endif /* INC_KALMANROLLPITCH_H_ */
