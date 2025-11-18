@@ -33,16 +33,21 @@ void KalmanRollPitch_Predict(KalmanRollPitch *kal, float *gyr, float T) {
 	/* Compute common trig terms */
 	float sp = sin(kal->phi);   float cp = cos(kal->phi);
 
+	/*
+    // CORRECTION :
+    float ct = cos(kal->theta);
+    float tt;
 
-	float tt = 999999999.0f;
-	///////Modification here//////////////////
-	/* APRÈS (CORRIGÉ):
-	float tt;
-	float ct = cos(kal->theta);
-	if (fabs(ct) < 0.01f) return;  // Évite division par zéro
-	tt = sin(kal->theta) / ct;     // ✅ tan(theta) correct */
+	//tan(theta) indéfinied for theta = +/- 90 degres (1.5708 radians)
+	if (fabs(ct) < 0.0001f) {
+		return;
+	}
+    tt = sin(kal->theta) / ct;
 
+    //float tt = tan(kal->theta);
+	*/
 
+    float tt = 999999999.0f;
 
 	/* tan(theta) is undefined for theta=90deg */
 	if (fabs(kal->theta) > 1.57952297305f || fabs(kal->theta) < 1.56206968053f) {
@@ -64,17 +69,7 @@ void KalmanRollPitch_Predict(KalmanRollPitch *kal, float *gyr, float T) {
 	/* Jacobian of f(x,u) */
 	float A[4] = { tt * (q * cp - r * sp), (r * cp + q * sp) * (tt * tt + 1.0f),
 				 -(r * cp + q * sp),        0.0f};
-	///////Modification here//////////////////
-	/* APRÈS (CORRIGÉ):
-	// Jacobian of f(x,u)
-	float A[4] = {
-	    tt * (q * cp - r * sp),
-	    (r * cp + q * sp) / (ct * ct),  // correction ici
-	    -(r * cp + q * sp),
-	    0.0f
-	};*/
 
-	// Utilise 1/cos²(theta) au lieu de tan²(theta) + 1
 
 	/* Update covariance matrix P+ = P- + T * (A*P- + P-*A' + Q) */
 	float Ptmp[4] = { T*(kal->Q[0]      + 2.0f*A[0]*kal->P[0] + A[1]*kal->P[1] + A[1]*kal->P[2]), T*(A[0]*kal->P[1] + A[2]*kal->P[0] + A[1]*kal->P[3] + A[3]*kal->P[1]),
@@ -92,7 +87,7 @@ uint8_t KalmanRollPitch_Update(KalmanRollPitch *kal, float *acc, float Va) {
 
 	float ax = acc[0];
 	float ay = acc[1];
-	float az = acc[2];
+	float az = -acc[2];
 
 	/* Compute common trig terms */
 	float sp = sin(kal->phi);   float cp = cos(kal->phi);
@@ -116,9 +111,7 @@ uint8_t KalmanRollPitch_Update(KalmanRollPitch *kal, float *acc, float Va) {
 	float Gdet = (G[0]*G[4]*G[8] - G[0]*G[5]*G[7] - G[1]*G[3]*G[8] + G[1]*G[5]*G[6] + G[2]*G[3]*G[7] - G[2]*G[4]*G[6]);
 
 	/* Ensure matrix is non-singular */
-	///////Modification here//////////////////
-	// APRÈS (plus clair):
-	//if (fabs(Gdet) > 0.000001f)
+
 	if (Gdet < -0.000001f || Gdet > 0.000001f){
 		float Gdetinv = 1.0f / Gdet;
 

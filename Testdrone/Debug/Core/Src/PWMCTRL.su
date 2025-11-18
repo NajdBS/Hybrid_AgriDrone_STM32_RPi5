@@ -1,0 +1,3 @@
+../Core/Src/PWMCTRL.c:13:6:ESC_Init	16	static
+../Core/Src/PWMCTRL.c:42:6:ESC_Calibrate	16	static
+../Core/Src/PWMCTRL.c:145:6:ESC_setSpeed	16	static

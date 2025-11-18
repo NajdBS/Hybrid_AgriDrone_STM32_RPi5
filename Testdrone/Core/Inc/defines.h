@@ -65,11 +65,11 @@
 #define RC_TO_YAW_RATE_SETPOINT (25.0f * DEG_TO_RAD)
 
 /* Calibration */
-#define CALIB_ACC_SCALE_X 0.9871f
-#define CALIB_ACC_SCALE_Y 0.9973f
-#define CALIB_ACC_SCALE_Z 0.9988f
-#define CALIB_ACC_BIAS_X  0.6858f
-#define CALIB_ACC_BIAS_Y  0.0530f
-#define CALIB_ACC_BIAS_Z -0.3015f
+#define CALIB_ACC_SCALE_X 1.0f
+#define CALIB_ACC_SCALE_Y 1.0f
+#define CALIB_ACC_SCALE_Z 1.0f
+#define CALIB_ACC_BIAS_X  0.0f
+#define CALIB_ACC_BIAS_Y  0.0f
+#define CALIB_ACC_BIAS_Z  0.0f
 
 #endif
