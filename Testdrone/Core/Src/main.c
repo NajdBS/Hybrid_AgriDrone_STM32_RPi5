@@ -28,7 +28,7 @@
 #include "KalmanRollPitch.h"
 #include "PIController.h"
 #include "defines.h"
-
+#include "PWMCTRL.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -80,6 +80,12 @@ float psiMag;*/
 /* Controllers */
 PIController ctrl_roll;
 PIController ctrl_pitch;
+
+/* ESC/Motor control */
+ESC_CONF motors;
+uint8_t motors_armed = 0;  // Safety flag
+uint16_t pwm_fr, pwm_fl, pwm_rr, pwm_rl;
+
 
 /* Timing variables */
 uint32_t time_now = 0;
@@ -154,6 +160,34 @@ void EXTI0_IRQHandler(void)
     HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_0);
 }
 */
+uint8_t rx_byte;
+
+/*void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+    if (huart->Instance == USART2)   // Si tu utilises UART2
+    {
+        switch (rx_byte)
+        {
+            case 'A':   // ARM
+                motors_armed = 1;
+                printf("Motors ARMED !\r\n");
+                break;
+
+            case 'D':   // DISARM
+                motors_armed = 0;
+                printf("Motors DISARMED !\r\n");
+                break;
+
+            default:
+                printf("Unknown command: %c\r\n", rx_byte);
+                break;
+        }
+
+        // Relancer la réception
+        HAL_UART_Receive_IT(&huart2, &rx_byte, 1);
+    }
+}*/
+
 /* Function prototypes */
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
@@ -220,7 +254,9 @@ int main(void)
       Filters_Init();
       Kalman_Init();
       Controllers_Init();
-
+      //Motors_Init();  // Initialize ESC/Motors
+      ESC_Init(&motors);
+      ESC_Calibrate(&motors);
       printf("System initialized successfully!\r\n");
       printf("Starting main loop...\r\n\r\n");
 
@@ -229,6 +265,9 @@ int main(void)
       time_prev_gyr = HAL_GetTick();
       time_prev_ctrl = HAL_GetTick();
       time_prev_led = HAL_GetTick();
+
+      //HAL_UART_Receive_IT(&huart2, &rx_byte, 1);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -280,6 +319,9 @@ int main(void)
               time_prev_ctrl = time_now;
 
               Update_Controllers();
+              motors_armed = 1;
+              motors.state = ARMED;
+              Update_Motors();  // Apply PWM to motors
           }
 
           /* Debug print (500ms) */
@@ -386,6 +428,36 @@ void Update_Controllers(void)
     // TODO: Apply PWM outputs here when implemented
 }
 
+/* Update Motors based on controller outputs */
+void Update_Motors(void)
+{
+    // SAFETY CHECK: Verify angles are safe
+    float roll_deg = roll_est * RAD_TO_DEG;
+    float pitch_deg = pitch_est * RAD_TO_DEG;
+
+    if (!ESC_SafetyCheck(&motors, roll_deg, pitch_deg)) {
+        // Unsafe angles detected - motors already stopped by SafetyCheck
+        motors_armed = 0;
+        return;
+    }
+
+    // If not armed, ensure motors are stopped
+    if (motors_armed == 0) {
+        ESC_Disarm(&motors);
+        ESC_SetSpeed(&motors);
+        return;
+    }
+
+    // Base throttle (for testing, start with 0)
+    int16_t throttle = 15;  // TODO: Add RC input later
+
+    // Update motor commands based on controller outputs
+    // ctrl_roll_output and ctrl_pitch_output are in rad/s from PI controllers
+    ESC_UpdateCommands(&motors, throttle, ctrl_roll_output, ctrl_pitch_output, 0.0f);
+
+    // Apply PWM to motors
+    ESC_SetSpeed(&motors);
+}
 /* Debug print to serial, including raw and filtered values */
 void Debug_Print(void)
 {
@@ -417,6 +489,15 @@ void Debug_Print(void)
     printf("Ctrl_Roll:  %.2f  |  Ctrl_Pitch: %.2f\r\n",
            ctrl_roll_output,
            ctrl_pitch_output);
+
+    printf("\r\n===== MOTOR COMMANDS =====\r\n");
+        printf("FR: %4d  FL: %4d  RR: %4d  RL: %4d  [%s]\r\n",
+               motors.FR, motors.FL, motors.RR, motors.RL,
+               motors_armed ? "ARMED" : "DISARMED");
+        printf("\r\n===== MOTOR PWM OUTPUT =====\r\n");
+        printf("PWM_FR: %4d  |  PWM_FL: %4d\r\n", pwm_fr, pwm_fl);
+        printf("PWM_RR: %4d  |  PWM_RL: %4d\r\n", pwm_rr, pwm_rl);
+        printf("PWM RANGE: [%d - %d]\r\n", PWM_MIN_US, PWM_MAX_US);
 
     printf("===============================\r\n\r\n");
 }
