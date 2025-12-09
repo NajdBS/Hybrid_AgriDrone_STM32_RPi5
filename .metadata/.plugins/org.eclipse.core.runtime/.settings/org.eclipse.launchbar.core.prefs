@@ -8,3 +8,4 @@ org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:HadesF4\ Debug/activeLaunchTarg
 org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:HadesF4RTOS\ Debug/activeLaunchMode=run
 org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:HadesF4RTOS\ Debug/activeLaunchTarget=null\:---
 org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:HadesF4_Micro_Quad\ Debug/activeLaunchMode=run
+org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:Testdrone/activeLaunchMode=debug

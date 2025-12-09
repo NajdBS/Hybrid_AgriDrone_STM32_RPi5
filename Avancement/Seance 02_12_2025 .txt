@@ -1,0 +1,5 @@
+Avancement du projet – Drone d’Agriculture
+
+Seance 02/12/2025 :
+
+Aujourd’hui, nous avons avancé sur la partie propulsion du drone. Nous avons d’abord identifié et documenté les quatre moteurs ainsi que leur mapping physique (Front Right, Front Left, Rear Right, Rear Left). Ensuite, nous avons effectué une série de tests individuels afin de vérifier leur bon fonctionnement. Ces tests ont consisté à varier le throttle, le courant, la tension ainsi que la largeur d’impulsion (PWM) envoyée à chaque moteur. Cela nous a permis d’observer le comportement réel des moteurs, de valider la plage de contrôle et de confirmer que chaque canal répond correctement. Ces manipulations constituent une étape importante pour la suite de l’intégration et le développement des algorithmes de contrôle du drone.

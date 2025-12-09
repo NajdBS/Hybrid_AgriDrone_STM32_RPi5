@@ -171,10 +171,10 @@ void ESC_SetSpeed(ESC_CONF *esc) {
     }
 
     // Apply PWM to hardware
-    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, pwm_fr);  // Front Right
-    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, pwm_fl);  // Front Left
-    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_3, pwm_rr);  // Rear Right
-    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_4, pwm_rl);  // Rear Left
+    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_3, pwm_fr);  // Front Right
+    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_4, pwm_fl);  // Front Left
+	__HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, pwm_rr);  // Rear Right
+	__HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, pwm_rl);  // Rear Left*/
 }
 
 void ESC_EmergencyStop(ESC_CONF *esc) {

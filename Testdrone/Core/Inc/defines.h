@@ -16,7 +16,7 @@
 #define SAMPLE_TIME_RC_MS   10
 #define SAMPLE_TIME_CTRL_MS 4
 #define SAMPLE_TIME_PWM_MS  4
-#define SAMPLE_TIME_LED_MS  2500
+#define SAMPLE_TIME_LED_MS  250
 
 /* Low-pass filters */
 #define LPF_ACC_CUTOFF_HZ 10.0f

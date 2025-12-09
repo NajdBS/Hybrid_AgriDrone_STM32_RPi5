@@ -39,11 +39,11 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  17 .debug_macro  00022c7b  00000000  00000000  00023d65  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 18 .debug_line   00015529  00000000  00000000  000469e0  2**0
+ 18 .debug_line   0001552b  00000000  00000000  000469e0  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .debug_str    000d072d  00000000  00000000  0005bf09  2**0
+ 19 .debug_str    000d072c  00000000  00000000  0005bf0b  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 20 .comment      00000043  00000000  00000000  0012c636  2**0
+ 20 .comment      00000043  00000000  00000000  0012c637  2**0
                   CONTENTS, READONLY
  21 .debug_frame  00005998  00000000  00000000  0012c67c  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
@@ -3944,30 +3944,30 @@ void ESC_SetSpeed(ESC_CONF *esc) {
     }
 
     // Apply PWM to hardware
-    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, pwm_fr);  // Front Right
+    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_3, pwm_fr);  // Front Right
  80029be:	4b0c      	ldr	r3, [pc, #48]	@ (80029f0 <ESC_SetSpeed+0xb4>)
  80029c0:	881a      	ldrh	r2, [r3, #0]
  80029c2:	4b0f      	ldr	r3, [pc, #60]	@ (8002a00 <ESC_SetSpeed+0xc4>)
  80029c4:	681b      	ldr	r3, [r3, #0]
- 80029c6:	635a      	str	r2, [r3, #52]	@ 0x34
-    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, pwm_fl);  // Front Left
+ 80029c6:	63da      	str	r2, [r3, #60]	@ 0x3c
+    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_4, pwm_fl);  // Front Left
  80029c8:	4b0a      	ldr	r3, [pc, #40]	@ (80029f4 <ESC_SetSpeed+0xb8>)
  80029ca:	881a      	ldrh	r2, [r3, #0]
  80029cc:	4b0c      	ldr	r3, [pc, #48]	@ (8002a00 <ESC_SetSpeed+0xc4>)
  80029ce:	681b      	ldr	r3, [r3, #0]
- 80029d0:	639a      	str	r2, [r3, #56]	@ 0x38
-    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_3, pwm_rr);  // Rear Right
+ 80029d0:	641a      	str	r2, [r3, #64]	@ 0x40
+	__HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, pwm_rr);  // Rear Right
  80029d2:	4b09      	ldr	r3, [pc, #36]	@ (80029f8 <ESC_SetSpeed+0xbc>)
  80029d4:	881a      	ldrh	r2, [r3, #0]
  80029d6:	4b0a      	ldr	r3, [pc, #40]	@ (8002a00 <ESC_SetSpeed+0xc4>)
  80029d8:	681b      	ldr	r3, [r3, #0]
- 80029da:	63da      	str	r2, [r3, #60]	@ 0x3c
-    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_4, pwm_rl);  // Rear Left
+ 80029da:	639a      	str	r2, [r3, #56]	@ 0x38
+	__HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, pwm_rl);  // Rear Left*/
  80029dc:	4b07      	ldr	r3, [pc, #28]	@ (80029fc <ESC_SetSpeed+0xc0>)
  80029de:	881a      	ldrh	r2, [r3, #0]
  80029e0:	4b07      	ldr	r3, [pc, #28]	@ (8002a00 <ESC_SetSpeed+0xc4>)
  80029e2:	681b      	ldr	r3, [r3, #0]
- 80029e4:	641a      	str	r2, [r3, #64]	@ 0x40
+ 80029e4:	635a      	str	r2, [r3, #52]	@ 0x34
 }
  80029e6:	bf00      	nop
  80029e8:	3708      	adds	r7, #8
@@ -4155,18 +4155,18 @@ int main(void)
  8002b18:	4603      	mov	r3, r0
  8002b1a:	4a8d      	ldr	r2, [pc, #564]	@ (8002d50 <main+0x2b0>)
  8002b1c:	6013      	str	r3, [r2, #0]
+	   	HAL_Delay(4000);
 
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
-  while (1)
-      {
+	   	__HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_4, 1100);
+
+	   	HAL_Delay(4000);*/
           time_now = HAL_GetTick();
  8002b1e:	f001 fa71 	bl	8004004 <HAL_GetTick>
  8002b22:	4603      	mov	r3, r0
  8002b24:	4a8b      	ldr	r2, [pc, #556]	@ (8002d54 <main+0x2b4>)
  8002b26:	6013      	str	r3, [r2, #0]
 
-          /* Read and filter accelerometer (16ms) */
+          //Read and filter accelerometer (16ms)
           if (time_now - time_prev_acc >= SAMPLE_TIME_ACC_MS) {
  8002b28:	4b8a      	ldr	r3, [pc, #552]	@ (8002d54 <main+0x2b4>)
  8002b2a:	681a      	ldr	r2, [r3, #0]
@@ -4261,7 +4261,7 @@ int main(void)
  8002bf6:	edc3 7a02 	vstr	s15, [r3, #8]
           }
 
-          /* Read and filter gyroscope (10ms) */
+          // Read and filter gyroscope (10ms)
           if (time_now - time_prev_gyr >= SAMPLE_TIME_GYR_MS) {
  8002bfa:	4b56      	ldr	r3, [pc, #344]	@ (8002d54 <main+0x2b4>)
  8002bfc:	681a      	ldr	r2, [r3, #0]
@@ -4359,7 +4359,7 @@ int main(void)
  8002ccc:	f000 f91e 	bl	8002f0c <Update_Kalman>
           }
 
-          /* Update controllers (4ms) */
+          // Update controllers (4ms)
           if (time_now - time_prev_ctrl >= SAMPLE_TIME_CTRL_MS) {
  8002cd0:	4b20      	ldr	r3, [pc, #128]	@ (8002d54 <main+0x2b4>)
  8002cd2:	681a      	ldr	r2, [r3, #0]
@@ -4388,33 +4388,33 @@ int main(void)
  8002cf6:	f000 f987 	bl	8003008 <Update_Motors>
           }
 
-          /* Debug print (500ms) */
+          // Debug print (500ms)
           if (time_now - time_prev_led >= SAMPLE_TIME_LED_MS) {
  8002cfa:	4b16      	ldr	r3, [pc, #88]	@ (8002d54 <main+0x2b4>)
  8002cfc:	681a      	ldr	r2, [r3, #0]
  8002cfe:	4b14      	ldr	r3, [pc, #80]	@ (8002d50 <main+0x2b0>)
  8002d00:	681b      	ldr	r3, [r3, #0]
  8002d02:	1ad3      	subs	r3, r2, r3
- 8002d04:	f640 12c3 	movw	r2, #2499	@ 0x9c3
- 8002d08:	4293      	cmp	r3, r2
- 8002d0a:	f67f af08 	bls.w	8002b1e <main+0x7e>
+ 8002d04:	2bf9      	cmp	r3, #249	@ 0xf9
+ 8002d06:	f67f af0a 	bls.w	8002b1e <main+0x7e>
               time_prev_led = time_now;
- 8002d0e:	4b11      	ldr	r3, [pc, #68]	@ (8002d54 <main+0x2b4>)
- 8002d10:	681b      	ldr	r3, [r3, #0]
- 8002d12:	4a0f      	ldr	r2, [pc, #60]	@ (8002d50 <main+0x2b0>)
- 8002d14:	6013      	str	r3, [r2, #0]
+ 8002d0a:	4b12      	ldr	r3, [pc, #72]	@ (8002d54 <main+0x2b4>)
+ 8002d0c:	681b      	ldr	r3, [r3, #0]
+ 8002d0e:	4a10      	ldr	r2, [pc, #64]	@ (8002d50 <main+0x2b0>)
+ 8002d10:	6013      	str	r3, [r2, #0]
 
               // Toggle all 4 LEDs on GPIOD (PD12, PD13, PD14, PD15)
 
               HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15);
- 8002d16:	f44f 4170 	mov.w	r1, #61440	@ 0xf000
- 8002d1a:	481c      	ldr	r0, [pc, #112]	@ (8002d8c <main+0x2ec>)
- 8002d1c:	f001 fc39 	bl	8004592 <HAL_GPIO_TogglePin>
+ 8002d12:	f44f 4170 	mov.w	r1, #61440	@ 0xf000
+ 8002d16:	481d      	ldr	r0, [pc, #116]	@ (8002d8c <main+0x2ec>)
+ 8002d18:	f001 fc3b 	bl	8004592 <HAL_GPIO_TogglePin>
               Debug_Print();
- 8002d20:	f000 f9ca 	bl	80030b8 <Debug_Print>
+ 8002d1c:	f000 f9cc 	bl	80030b8 <Debug_Print>
           time_now = HAL_GetTick();
- 8002d24:	e6fb      	b.n	8002b1e <main+0x7e>
- 8002d26:	bf00      	nop
+ 8002d20:	e6fd      	b.n	8002b1e <main+0x7e>
+ 8002d22:	bf00      	nop
+ 8002d24:	f3af 8000 	nop.w
  8002d28:	60000000 	.word	0x60000000
  8002d2c:	40239eb8 	.word	0x40239eb8
  8002d30:	a0000000 	.word	0xa0000000
@@ -4813,8 +4813,8 @@ void Update_Motors(void)
     }
 
     // Base throttle (for testing, start with 0)
-    int16_t throttle = 15;  // TODO: Add RC input later
- 8003064:	230f      	movs	r3, #15
+    int16_t throttle = 50;  // TODO: Add RC input later
+ 8003064:	2332      	movs	r3, #50	@ 0x32
  8003066:	80fb      	strh	r3, [r7, #6]
 
     // Update motor commands based on controller outputs

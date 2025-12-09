@@ -1,4 +1,4 @@
-17:11:42 **** Incremental Build of configuration Debug for project Testdrone ****
+17:19:47 **** Incremental Build of configuration Debug for project Testdrone ****
 make -j20 all 
 arm-none-eabi-size  Testdrone.elf 
    text	   data	    bss	    dec	    hex	filename
@@ -6,5 +6,5 @@ arm-none-eabi-size  Testdrone.elf
 Finished building: default.size.stdout
  
 
-17:11:42 Build Finished. 0 errors, 0 warnings. (took 307ms)
+17:19:47 Build Finished. 0 errors, 0 warnings. (took 188ms)
 

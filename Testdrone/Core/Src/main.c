@@ -274,9 +274,25 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
       {
+	    /*__HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, 1100);
+
+	    HAL_Delay(4000);
+
+	    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, 1100);
+
+	   	HAL_Delay(4000);
+
+
+	   	__HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_3, 1100);
+
+	   	HAL_Delay(4000);
+
+	   	__HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_4, 1100);
+
+	   	HAL_Delay(4000);*/
           time_now = HAL_GetTick();
 
-          /* Read and filter accelerometer (16ms) */
+          //Read and filter accelerometer (16ms)
           if (time_now - time_prev_acc >= SAMPLE_TIME_ACC_MS) {
               time_prev_acc = time_now;
 
@@ -294,7 +310,7 @@ int main(void)
               acc_filtered[2] = LPFTwoPole_Update(&lpf_acc_z, acc_raw[2]);
           }
 
-          /* Read and filter gyroscope (10ms) */
+          // Read and filter gyroscope (10ms)
           if (time_now - time_prev_gyr >= SAMPLE_TIME_GYR_MS) {
               time_prev_gyr = time_now;
 
@@ -314,7 +330,7 @@ int main(void)
               Update_Kalman();
           }
 
-          /* Update controllers (4ms) */
+          // Update controllers (4ms)
           if (time_now - time_prev_ctrl >= SAMPLE_TIME_CTRL_MS) {
               time_prev_ctrl = time_now;
 
@@ -324,7 +340,7 @@ int main(void)
               Update_Motors();  // Apply PWM to motors
           }
 
-          /* Debug print (500ms) */
+          // Debug print (500ms)
           if (time_now - time_prev_led >= SAMPLE_TIME_LED_MS) {
               time_prev_led = time_now;
 
@@ -449,7 +465,7 @@ void Update_Motors(void)
     }
 
     // Base throttle (for testing, start with 0)
-    int16_t throttle = 15;  // TODO: Add RC input later
+    int16_t throttle = 50;  // TODO: Add RC input later
 
     // Update motor commands based on controller outputs
     // ctrl_roll_output and ctrl_pitch_output are in rad/s from PI controllers
