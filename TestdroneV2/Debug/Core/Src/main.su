@@ -1,0 +1,17 @@
+../Core/Src/main.c:131:5:main	8	static
+../Core/Src/main.c:265:6:Sensors_Init	8	static
+../Core/Src/main.c:276:6:Filters_Init	8	static
+../Core/Src/main.c:292:6:Kalman_Init	32	static
+../Core/Src/main.c:303:6:Controllers_Init	8	static
+../Core/Src/main.c:317:6:Update_Kalman	24	static
+../Core/Src/main.c:335:6:Update_Controllers	16	static
+../Core/Src/main.c:353:6:Update_Motors	24	static
+../Core/Src/main.c:383:6:Debug_Print	40	static
+../Core/Src/main.c:427:5:_write	24	static
+../Core/Src/main.c:436:6:SystemClock_Config	96	static
+../Core/Src/main.c:486:13:MX_I2C1_Init	8	static
+../Core/Src/main.c:534:13:MX_TIM1_Init	112	static
+../Core/Src/main.c:626:13:MX_USART2_UART_Init	8	static
+../Core/Src/main.c:661:13:MX_GPIO_Init	40	static
+../Core/Src/main.c:698:6:HAL_TIM_PeriodElapsedCallback	16	static
+../Core/Src/main.c:715:6:Error_Handler	4	static,ignoring_inline_asm

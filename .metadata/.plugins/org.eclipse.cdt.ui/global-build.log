@@ -1,7 +1,21 @@
-17:19:47 **** Incremental Build of configuration Debug for project Testdrone ****
+17:17:17 **** Incremental Build of configuration Debug for project TestdroneV2 ****
 make -j20 all 
-arm-none-eabi-size  Testdrone.elf 
+arm-none-eabi-size  TestdroneV2.elf 
    text	   data	    bss	    dec	    hex	filename
-  48344	    468	   2904	  51716	   ca04	Testdrone.elf
+  42684	    104	   2768	  45556	   b1f4	TestdroneV2.elf
+Finished building: default.size.stdout
+ 
+17:17:18 **** Incremental Build of configuration Debug for project TestdroneV2 ****
+make -j20 all 
+arm-none-eabi-size  TestdroneV2.elf 
+   text	   data	    bss	    dec	    hex	filename
+  42684	    104	   2768	  45556	   b1f4	TestdroneV2.elf
+Finished building: default.size.stdout
+ 
+17:17:42 **** Incremental Build of configuration Debug for project TestdroneV2 ****
+make -j20 all 
+arm-none-eabi-size  TestdroneV2.elf 
+   text	   data	    bss	    dec	    hex	filename
+  42684	    104	   2768	  45556	   b1f4	TestdroneV2.elf
 Finished building: default.size.stdout
  
