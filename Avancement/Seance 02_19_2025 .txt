@@ -1,0 +1,5 @@
+Avancement du projet – Drone d’Agriculture
+
+Séance 19/12/2025 :
+
+Aujourd’hui, l’objectif principal était de mettre en place une interface de commande via le protocole UART pour piloter le throttle (la poussée) du drone en temps réel. Pour ce faire, nous avons développé une routine d'interruption permettant d'ajuster la puissance des moteurs de manière interactive à l'aide des commandes '+' et '-'. Cette implémentation logicielle permet de modifier la consigne de poussée tout en maintenant actifs les algorithmes de stabilisation et le filtrage de Kalman. Cette étape est essentielle pour valider la réactivité de la chaîne de propulsion et tester le comportement dynamique du drone sans avoir à recompiler le code à chaque ajustement.
