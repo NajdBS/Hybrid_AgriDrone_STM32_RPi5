@@ -5,6 +5,8 @@
  *      Author: Najd Ben Saad
  */
 
+/* Written by: Philip M. Salmony @ philsal.co.uk */
+
 #ifndef LPF_H
 #define LPF_H
 
@@ -13,10 +15,10 @@
 #define LPF_TYPE_BESSEL 1
 
 typedef struct {
-	float out;
-	float buf[2];
-	float coeffNum;
-	float coeffDen[2];
+    float out;          // Current filter output (y[n])
+    float buf[2];       // History buffer (y[n-1], y[n-2])
+    float coeffNum;     // Numerator coefficient
+    float coeffDen[2];  // Denominator coefficients
 } LPFTwoPole;
 
 void LPFTwoPole_Init(LPFTwoPole *lpf, uint8_t type, float cutoffFrequency, float sampleTime);

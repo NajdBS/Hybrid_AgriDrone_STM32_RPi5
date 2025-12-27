@@ -5,6 +5,12 @@
  *      Author: Najd Ben Saad
  */
 
+/* Written by: Philip M. Salmony @ philsal.co.uk */
+
+/* Description:
+ * Implementation of the 2-pole Bessel Low Pass Filter.
+ * Based on discrete-time IIR filter logic.
+ */
 
 #include "LowPassFilter.h"
 

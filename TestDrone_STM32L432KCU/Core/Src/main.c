@@ -19,6 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include <stdio.h>
+#include <math.h>
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "MPU6050.h"
@@ -45,10 +46,9 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+
 I2C_HandleTypeDef hi2c1;
-
 TIM_HandleTypeDef htim1;
-
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
@@ -69,38 +69,34 @@ PIController ctrl_roll;
 PIController ctrl_pitch;
 
 /* ESC/Motor control */
+
 ESC_CONF motors;
 uint8_t motors_armed = 0;  // Safety flag
-uint16_t pwm_fr, pwm_fl, pwm_rr, pwm_rl;
 
 /* Timing variables */
 uint32_t time_now = 0;
-uint32_t time_prev_acc = 0;
-uint32_t time_prev_gyr = 0;
-uint32_t time_prev_ctrl = 0;
+uint32_t time_prev_loop = 0;
 uint32_t time_prev_led = 0;
 
-/* State variables */
-float acc_raw[3] = { 0 };      // Accelerometer raw
-float acc_filtered[3] = { 0 }; // Accelerometer filtered
-float gyr_raw[3] = { 0 };      // Gyroscope raw
-float gyr_filtered[3] = { 0 }; // Gyroscope filtered
+/* --- Sensor Data --- */
+float acc_raw[3] = { 0 };
+float acc_filtered[3] = { 0 };
+float gyr_raw[3] = { 0 };
+float gyr_filtered[3] = { 0 };
 
+/* --- Angles & Control --- */
 float roll_est = 0.0f;       // Estimated roll (rad)
 float pitch_est = 0.0f;      // Estimated pitch (rad)
 
 float roll_setpoint = 0.0f;  // Desired roll (rad)
-float pitch_setpoint = 0.0f; // Desired pitch (rad)
+float pitch_setpoint = 0.0f;
 
 float ctrl_roll_output = 0.0f;
 float ctrl_pitch_output = 0.0f;
 
-/* USER CODE BEGIN PV */
-// Déclarations globales
+/* --- Commands (UART/Bluetooth) --- */
 volatile uint8_t rx_data;
-volatile int throttle = 0;
-
-/* USER CODE END PV */
+volatile int16_t throttle_cmd = 0;
 
 /* USER CODE END PV */
 
@@ -112,15 +108,9 @@ static void MX_TIM1_Init(void);
 static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
 
-void Sensors_Init(void);
-void Filters_Init(void);
-void Kalman_Init(void);
-void Controllers_Init(void);
-
-void Read_Sensors(void);
-void Update_Kalman(void);
-void Update_Controllers(void);
-void Debug_Print(void);
+void Modules_Init(void);        // Initialize all sensors and libraries
+void Process_Loop_100Hz(void);  // Main Flight Control Algorithm
+void Debug_Print(void);         // Send Telemetry via UART
 
 /* USER CODE END PFP */
 
@@ -134,29 +124,52 @@ void Debug_Print(void);
  * @retval int
  */
 /* USER CODE BEGIN 4 */
+
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 	if (huart->Instance == USART2) {
+
+		// Command: Increase Throttle (+)
 		if (rx_data == '+') {
-			if (throttle < 600)
-				throttle += 50;
-			printf("Throttle %d\r\n", throttle);
-		} else if (rx_data == '-') {
-			if (throttle > 0)
-				throttle -= 50;
-			printf("Throttle %d\r\n", throttle);
-		} else if (rx_data == 'a' || rx_data == 'A') {
-			motors_armed = 1;
-			motors.state = ARMED;
-			printf("DRONE ARMED!\r\n");
-		} else if (rx_data == 'd' || rx_data == 'D') {
-			motors_armed = 0;
-			ESC_Disarm(&motors); //
-			throttle = 0;
-			printf("DRONE DISARMED!\r\n");
+			if (throttle_cmd + 50 <= MOTOR_SAFE_MAX) {
+				throttle_cmd += 50;
+			} else {
+				throttle_cmd = MOTOR_SAFE_MAX;
+			}
 		}
+		// Command: Decrease Throttle (-)
+		else if (rx_data == '-') {
+			if (throttle_cmd - 50 >= 0) {
+				throttle_cmd -= 50;
+			} else {
+				throttle_cmd = 0;
+			}
+		}
+		// Command: ARM ('a' or 'A')
+		else if (rx_data == 'a' || rx_data == 'A') {
+			motors_armed = 1;
+			ESC_Arm(&motors);
+		}
+		// Command: DISARM ('d' or 'D')
+		else if (rx_data == 'd' || rx_data == 'D') {
+			motors_armed = 0;
+			throttle_cmd = 0;
+			ESC_Disarm(&motors);
+		}
+
+		// Re-enable Interrupt for next character
 		HAL_UART_Receive_IT(&huart2, (uint8_t*) &rx_data, 1);
 	}
 }
+
+/**
+ * @brief Redirect printf to UART2
+ * Allows using printf() for debugging over Bluetooth/USB.
+ */
+int _write(int file, char *ptr, int len) {
+	HAL_UART_Transmit(&huart2, (uint8_t*) ptr, len, HAL_MAX_DELAY);
+	return len;
+}
+
 /* USER CODE END 4 */
 int main(void) {
 
@@ -185,33 +198,32 @@ int main(void) {
 	MX_I2C1_Init();
 	MX_TIM1_Init();
 	MX_USART2_UART_Init();
+
 	/* USER CODE BEGIN 2 */
+	printf("\r\n==================================\r\n");
+	printf("   STM32 FLIGHT CONTROLLER V1.0   \r\n");
+	printf("==================================\r\n");
 
-	/* Wait for sensor stabilization */
-	HAL_Delay(100);
+	// Wait for sensors to power up fully
+	HAL_Delay(500);
 
-	/* Initialize modules */
-	Sensors_Init();
-	Filters_Init();
-	Kalman_Init();
-	Controllers_Init();
-	// Initialize ESC/Motors
+	/* Initialize Flight Modules */
+	Modules_Init();
+
+	/* Initialize Motors */
 	ESC_Init(&motors);
-	ESC_Calibrate(&motors);
-	printf("System initialized successfully!\r\n");
-	printf("Starting main loop...\r\n\r\n");
 
-	/* Initialize timing */
-	time_prev_acc = HAL_GetTick();
-	time_prev_gyr = HAL_GetTick();
-	time_prev_ctrl = HAL_GetTick();
+	// WARNING: Calibration generates high PWM. Only use when needed.
+	// ESC_Calibrate(&motors);
+
+	printf("System Ready. Waiting for ARM command ('a')...\r\n");
+
+	/* Start listening for Bluetooth commands */
+	HAL_UART_Receive_IT(&huart2, (uint8_t*) &rx_data, 1);
+
+	/* Reset Timing Counters */
+	time_prev_loop = HAL_GetTick();
 	time_prev_led = HAL_GetTick();
-	/* USER CODE BEGIN 2 */
-	// Start listening for ONE character on UART2 using Interrupts
-	HAL_UART_Receive_IT(&huart2, &rx_data, 1);
-
-	/* USER CODE END 2 */
-
 	/* USER CODE END 2 */
 
 	/* Infinite loop */
@@ -219,231 +231,195 @@ int main(void) {
 	while (1) {
 		time_now = HAL_GetTick();
 
-		/* --- 1. ACCELEROMETER DATA (Update every 16ms) --- */
-		/* Accelerometer is used by the Kalman filter to correct long-term drift */
-		if (time_now - time_prev_acc >= SAMPLE_TIME_ACC_MS) {
-			time_prev_acc = time_now;
-
-			MPU6050_Read_Accel(&hi2c1, &mpu6050);
-
-			// Apply calibration and convert 'g' to m/s²
-			acc_raw[0] = ((mpu6050.Ax - CALIB_ACC_BIAS_X) * CALIB_ACC_SCALE_X)
-					* 9.81f;
-			acc_raw[1] = ((mpu6050.Ay - CALIB_ACC_BIAS_Y) * CALIB_ACC_SCALE_Y)
-					* 9.81f;
-			acc_raw[2] = ((mpu6050.Az - CALIB_ACC_BIAS_Z) * CALIB_ACC_SCALE_Z)
-					* 9.81f;
-
-			// Apply low-pass filter to reduce vibration noise
-			acc_filtered[0] = LPFTwoPole_Update(&lpf_acc_x, acc_raw[0]);
-			acc_filtered[1] = LPFTwoPole_Update(&lpf_acc_y, acc_raw[1]);
-			acc_filtered[2] = LPFTwoPole_Update(&lpf_acc_z, acc_raw[2]);
+		/* --- CONTROL LOOP (100Hz / 10ms) --- */
+		if (time_now - time_prev_loop >= SAMPLE_TIME_CTRL_MS) {
+			time_prev_loop = time_now;
+			Process_Loop_100Hz();
 		}
 
-		/* --- 2. MAIN CONTROL BLOCK (Update every 10ms) --- */
-		/* Synchronized with Gyroscope for maximum stability */
-		if (time_now - time_prev_gyr >= SAMPLE_TIME_GYR_MS) {
-			time_prev_gyr = time_now;
-
-			// A. Read Gyroscope (Rotation speed in rad/s)
-			MPU6050_Read_Gyro(&hi2c1, &mpu6050);
-			gyr_raw[0] = mpu6050.Gx * DEG_TO_RAD;
-			gyr_raw[1] = mpu6050.Gy * DEG_TO_RAD;
-			gyr_raw[2] = mpu6050.Gz * DEG_TO_RAD;
-
-			// Filter high-frequency gyro noise
-			gyr_filtered[0] = LPFTwoPole_Update(&lpf_gyr_x, gyr_raw[0]);
-			gyr_filtered[1] = LPFTwoPole_Update(&lpf_gyr_y, gyr_raw[1]);
-			gyr_filtered[2] = LPFTwoPole_Update(&lpf_gyr_z, gyr_raw[2]);
-
-			// B. Update Attitude Estimation (Kalman Filter)
-			/* Predicts the roll and pitch angles based on new gyro data */
-			Update_Kalman();
-
-			// C. Update PI Controllers
-			/* Calculate corrections based on the fresh attitude estimate */
-			Update_Controllers();
-
-			// D. Apply PWM to Motors
-			/* Mixes throttle and PID outputs to hardware channels */
-			Update_Motors();
-		}
-
-		/* --- 3. DEBUG & TELEMETRY (Update every 500ms) --- */
+		/* --- TELEMETRY LOOP (1Hz / 1000ms) --- */
 		if (time_now - time_prev_led >= SAMPLE_TIME_LED_MS) {
 			time_prev_led = time_now;
-
-			// Blink status LED
-			HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_3);
-
-			// Print sensor and motor data to UART
+			// Blink LED to indicate "Alive"
+			HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
 			Debug_Print();
 		}
 	}
 	/* USER CODE END 3 */
 }
-/* Initialize sensors */
-void Sensors_Init(void) {
+/* USER CODE BEGIN 4 */
+
+/**
+ * @brief Initialize all flight software modules
+ */
+void Modules_Init(void) {
+	// 1. Initialize MPU6050
 	if (MPU6050_Init(&hi2c1) == 0) {
-		printf("MPU6050 initialized successfully!\r\n");
+		printf("MPU6050: OK\r\n");
 	} else {
-		printf("ERROR: MPU6050 initialization failed!\r\n");
-		Error_Handler();
+		printf("MPU6050: FAILED! Checking connections...\r\n");
+		Error_Handler(); // Stop here if sensor fails
 	}
-}
 
-/* Initialize low-pass filters */
-void Filters_Init(void) {
-	// Accelerometer filters (10 Hz cutoff, 16ms sample time)
-	LPFTwoPole_Init(&lpf_acc_x, LPF_TYPE_BESSEL, LPF_ACC_CUTOFF_HZ,
-			SAMPLE_TIME_ACC_MS / 1000.0f);
-	LPFTwoPole_Init(&lpf_acc_y, LPF_TYPE_BESSEL, LPF_ACC_CUTOFF_HZ,
-			SAMPLE_TIME_ACC_MS / 1000.0f);
-	LPFTwoPole_Init(&lpf_acc_z, LPF_TYPE_BESSEL, LPF_ACC_CUTOFF_HZ,
-			SAMPLE_TIME_ACC_MS / 1000.0f);
+	// 2. Initialize Low Pass Filters
+	// Accel Cutoff: 10Hz | Gyro Cutoff: 30Hz | Loop Time: 0.01s
+	float dt = SAMPLE_TIME_CTRL_MS / 1000.0f;
 
-	// Gyroscope filters (32 Hz cutoff, 10ms sample time)
-	LPFTwoPole_Init(&lpf_gyr_x, LPF_TYPE_BESSEL, LPF_GYR_CUTOFF_HZ,
-			SAMPLE_TIME_GYR_MS / 1000.0f);
-	LPFTwoPole_Init(&lpf_gyr_y, LPF_TYPE_BESSEL, LPF_GYR_CUTOFF_HZ,
-			SAMPLE_TIME_GYR_MS / 1000.0f);
-	LPFTwoPole_Init(&lpf_gyr_z, LPF_TYPE_BESSEL, LPF_GYR_CUTOFF_HZ,
-			SAMPLE_TIME_GYR_MS / 1000.0f);
+	LPFTwoPole_Init(&lpf_acc_x, LPF_TYPE_BESSEL, LPF_ACC_CUTOFF_HZ, dt);
+	LPFTwoPole_Init(&lpf_acc_y, LPF_TYPE_BESSEL, LPF_ACC_CUTOFF_HZ, dt);
+	LPFTwoPole_Init(&lpf_acc_z, LPF_TYPE_BESSEL, LPF_ACC_CUTOFF_HZ, dt);
 
-	printf("Low-pass filters initialized!\r\n");
-}
+	LPFTwoPole_Init(&lpf_gyr_x, LPF_TYPE_BESSEL, LPF_GYR_CUTOFF_HZ, dt);
+	LPFTwoPole_Init(&lpf_gyr_y, LPF_TYPE_BESSEL, LPF_GYR_CUTOFF_HZ, dt);
+	LPFTwoPole_Init(&lpf_gyr_z, LPF_TYPE_BESSEL, LPF_GYR_CUTOFF_HZ, dt);
 
-/* Initialize Kalman filter */
-void Kalman_Init(void) {
-	float Q[2] = { EKF_N_GYR, EKF_N_GYR };  // Process noise
-	float R[3] = { EKF_N_ACC, EKF_N_ACC, EKF_N_ACC };  // Measurement noise
-
+	// 3. Initialize Kalman Filter
+	float Q[2] = { EKF_N_GYR, EKF_N_GYR };
+	float R[3] = { EKF_N_ACC, EKF_N_ACC, EKF_N_ACC };
 	KalmanRollPitch_Init(&ekf, EKF_P_INIT, Q, R);
 
-	printf("Kalman filter initialized!\r\n");
+	// 4. Initialize PID Controllers
+	PI_Init(&ctrl_roll, CTRL_ROLL_P, CTRL_ROLL_I, CTRL_ROLL_LIM_MIN,
+			CTRL_ROLL_LIM_MAX);
+	PI_Init(&ctrl_pitch, CTRL_PITCH_P, CTRL_PITCH_I, CTRL_PITCH_LIM_MIN,
+			CTRL_PITCH_LIM_MAX);
+
+	printf("Modules Initialized.\r\n");
 }
 
-/* Initialize PI controllers */
-void Controllers_Init(void) {
-	// Roll controller
-	PI_Init(&ctrl_roll, CTRL_ROLL_P, CTRL_ROLL_I,
-	CTRL_ROLL_LIM_MIN, CTRL_ROLL_LIM_MAX);
+/**
+ * @brief Main Flight Control Loop (Running at 100Hz)
+ * Reads sensors, updates Kalman, runs PID, mixes motors.
+ */
+void Process_Loop_100Hz(void) {
 
-	// Pitch controller
-	PI_Init(&ctrl_pitch, CTRL_PITCH_P, CTRL_PITCH_I,
-	CTRL_PITCH_LIM_MIN, CTRL_PITCH_LIM_MAX);
+	// SENSOR READ ---
+	MPU6050_Read_Accel(&hi2c1, &mpu6050);
+	MPU6050_Read_Gyro(&hi2c1, &mpu6050);
 
-	printf("PI controllers initialized!\r\n");
-}
+	// PRE-PROCESSING (Filtering & Conversion) ---
 
-/* Update Kalman filter */
-void Update_Kalman(void) {
-	float dt = SAMPLE_TIME_GYR_MS / 1000.0f; // 10ms = 0.01s  // ???????????????????????????
+	// Accelerometer: Convert raw to m/s^2 (Standard Gravity = 9.81)
+	acc_raw[0] = ((mpu6050.Ax - CALIB_ACC_BIAS_X) * CALIB_ACC_SCALE_X) * 9.81f;
+	acc_raw[1] = ((mpu6050.Ay - CALIB_ACC_BIAS_Y) * CALIB_ACC_SCALE_Y) * 9.81f;
+	acc_raw[2] = ((mpu6050.Az - CALIB_ACC_BIAS_Z) * CALIB_ACC_SCALE_Z) * 9.81f;
 
-	// Predict step (using gyroscope)
+	acc_filtered[0] = LPFTwoPole_Update(&lpf_acc_x, acc_raw[0]);
+	acc_filtered[1] = LPFTwoPole_Update(&lpf_acc_y, acc_raw[1]);
+	acc_filtered[2] = LPFTwoPole_Update(&lpf_acc_z, acc_raw[2]);
+
+	// Gyroscope: Convert Degrees/s to Radians/s
+	gyr_raw[0] = mpu6050.Gx * DEG_TO_RAD;
+	gyr_raw[1] = mpu6050.Gy * DEG_TO_RAD;
+	gyr_raw[2] = mpu6050.Gz * DEG_TO_RAD;
+
+	gyr_filtered[0] = LPFTwoPole_Update(&lpf_gyr_x, gyr_raw[0]);
+	gyr_filtered[1] = LPFTwoPole_Update(&lpf_gyr_y, gyr_raw[1]);
+	gyr_filtered[2] = LPFTwoPole_Update(&lpf_gyr_z, gyr_raw[2]);
+
+	// ATTITUDE ESTIMATION (Kalman Filter) ---
+	float dt = SAMPLE_TIME_CTRL_MS / 1000.0f; // dt = 0.01s
+
+	// Prediction Step (Gyro Integration)
 	KalmanRollPitch_Predict(&ekf, gyr_filtered, dt);
 
-	// Update step (using accelerometer)
-	float Va = 0.0f;  // No airspeed sensor
-	uint8_t success = KalmanRollPitch_Update(&ekf, acc_filtered, Va);
+	// Update Step (Accelerometer Correction)
+	// Va = 0.0f because we are hovering (no airspeed)
+	KalmanRollPitch_Update(&ekf, acc_filtered, 0.0f);
 
-	if (success) {
-		roll_est = ekf.phi;      // Roll in radians
-		pitch_est = ekf.theta;   // Pitch in radians
-	}
-}
+	roll_est = ekf.phi;   // Current Roll (Rad)
+	pitch_est = ekf.theta; // Current Pitch (Rad)
 
-/* Update PI controllers */
-void Update_Controllers(void) {
-	//
+	// FLIGHT CONTROL (PID) ---
 
-	float dt = SAMPLE_TIME_CTRL_MS / 1000.0f; // 4ms = 0.004s // ???????????????????????????
-	//float dt = SAMPLE_TIME_CTRL_MS;
-	// TEST: Set fixed setpoints (0 degrees = level flight)// ?????????????????????????????
-	roll_setpoint = 0.0f * DEG_TO_RAD;   // 0 degrees
-	pitch_setpoint = 0.0f * DEG_TO_RAD;  // 0 degrees
+	// Setpoints: 0.0 means "Stay Flat"
+	// TODO: Map rx_data/joystick to these values later for steering
+	roll_setpoint = 0.0f;
+	pitch_setpoint = 0.0f;
 
-	// Update roll controller
 	ctrl_roll_output = PI_Update(&ctrl_roll, roll_setpoint, roll_est, dt);
-
-	// Update pitch controller
 	ctrl_pitch_output = PI_Update(&ctrl_pitch, pitch_setpoint, pitch_est, dt);
 
-	// TODO: Apply PWM outputs here when implemented
-}
+	// MOTOR MIXING & SAFETY ---
 
-/* Update Motors based on controller outputs */
-void Update_Motors(void) {
-	// SAFETY CHECK: Verify angles are safe
+	// Convert radians to degrees for safety check
 	float roll_deg = roll_est * RAD_TO_DEG;
 	float pitch_deg = pitch_est * RAD_TO_DEG;
 
-	/*if (!ESC_SafetyCheck(&motors, roll_deg, pitch_deg)) {
-	 // Unsafe angles detected - motors already stopped by SafetyCheck
-	 motors_armed = 0;
-	 return;
-	 }*/
-
-	// If not armed, ensure motors are stopped
-	if (motors_armed == 0) {
-		ESC_Disarm(&motors);
-		ESC_SetSpeed(&motors);
-		return;
+	// Safety: Emergency Stop if tilted > 45 degrees
+	if (!ESC_SafetyCheck(&motors, roll_deg, pitch_deg)) {
+		motors_armed = 0;
+		throttle_cmd = 0;
 	}
 
-	// Base throttle (for testing, start with 0)
-	//  int16_t throttle = 100;  // TODO: Add RC input later
+	// If Armed, calculate and send PWM
+	if (motors_armed) {
+		// Mix throttle and PID corrections to 4 motors
+		// Yaw correction is set to 0.0f for now (handled by user manually if needed)
+		ESC_UpdateCommands(&motors, throttle_cmd, ctrl_roll_output,
+				ctrl_pitch_output, 0.0f);
+	} else {
+		// Ensure motors are OFF if not armed
+		ESC_Disarm(&motors);
+	}
 
-	// Update motor commands based on controller outputs
-	// ctrl_roll_output and ctrl_pitch_output are in rad/s from PI controllers
-	ESC_UpdateCommands(&motors, throttle, ctrl_roll_output, ctrl_pitch_output,
-			0.0f);
-
-	// Apply PWM to motors
+	// Apply calculated PWM to hardware timers
 	ESC_SetSpeed(&motors);
 }
-/* Debug print to serial, including raw and filtered values */
+
+/**
+ * @brief Prints Telemetry Data to UART
+ * Called every 1 second.
+ */
+
 void Debug_Print(void) {
-	printf("\r\n===== SENSOR DATA =====\r\n");
-
-	printf("ACC RAW en g :      X=%.2f  Y=%.2f  Z=%.2f g\r\n", mpu6050.Ax,
-			mpu6050.Ay, mpu6050.Az);
-	printf("ACC RAW+Calib en m/s² : X=%.2f  Y=%.2f  Z=%.2f m/s²\r\n",
-			acc_raw[0], acc_raw[1], acc_raw[2]);
-	printf("ACC FILTERED: X=%.2f  Y=%.2f  Z=%.2f m/s²\r\n", acc_filtered[0],
-			acc_filtered[1], acc_filtered[2]);
-
-	printf("GYR RAW en d/s :      X=%.2f  Y=%.2f  Z=%.2f d/s\r\n", mpu6050.Gx,
-			mpu6050.Gy, mpu6050.Gz);
-	printf("GYR RAW en rad/s : X=%.2f  Y=%.2f  Z=%.2f rad/s\r\n", gyr_raw[0],
-			gyr_raw[1], gyr_raw[2]);
-	printf("GYR FILTERED: X=%.2f  Y=%.2f  Z=%.2f rad/s\r\n", gyr_filtered[0],
-			gyr_filtered[1], gyr_filtered[2]);
-
-	printf("\r\n===== KALMAN ESTIMATES =====\r\n");
-	printf("Roll:  %.2f°  |  Pitch: %.2f°\r\n", roll_est * RAD_TO_DEG,
-			pitch_est * RAD_TO_DEG);
-
-	printf("\r\n===== CONTROLLER OUTPUTS =====\r\n");
-	printf("Ctrl_Roll:  %.2f  |  Ctrl_Pitch: %.2f\r\n", ctrl_roll_output,
-			ctrl_pitch_output);
-
-	printf("\r\n===== MOTOR COMMANDS =====\r\n");
-	printf("FR: %4d  FL: %4d  RR: %4d  RL: %4d  [%s]\r\n", motors.FR, motors.FL,
-			motors.RR, motors.RL, motors_armed ? "ARMED" : "DISARMED");
-	printf("\r\n===== MOTOR PWM OUTPUT =====\r\n");
-	printf("PWM_FR: %4d  |  PWM_FL: %4d\r\n", pwm_fr, pwm_fl);
-	printf("PWM_RR: %4d  |  PWM_RL: %4d\r\n", pwm_rr, pwm_rl);
-	printf("PWM RANGE: [%d - %d]\r\n", PWM_MIN_US, PWM_MAX_US);
-
-	printf("===============================\r\n\r\n");
+	// Print essential data
+	// TH: Throttle | R: Roll Angle | P: Pitch Angle | Motors: FR FL RR RL
+	printf("TH: %d | Roll: %.1f | Pitch: %.1f | Motors: %d %d %d %d | %s\r\n",
+			throttle_cmd, roll_est * RAD_TO_DEG, pitch_est * RAD_TO_DEG,
+			motors.FR, motors.FL, motors.RR, motors.RL,
+			motors_armed ? "ARMED" : "SAFE");
 }
 
-/* Printf redirection to UART */
-int _write(int file, char *ptr, int len) {
-	HAL_UART_Transmit(&huart2, (uint8_t*) ptr, len, HAL_MAX_DELAY);
-	return len;
-}
+/* USER CODE END 4 */
+
+/* Debug print to serial, including raw and filtered values */
+/*void Debug_Print(void) {
+ printf("\r\n===== SENSOR DATA =====\r\n");
+
+ printf("ACC RAW en g :      X=%.2f  Y=%.2f  Z=%.2f g\r\n", mpu6050.Ax,
+ mpu6050.Ay, mpu6050.Az);
+ printf("ACC RAW+Calib en m/s² : X=%.2f  Y=%.2f  Z=%.2f m/s²\r\n",
+ acc_raw[0], acc_raw[1], acc_raw[2]);
+ printf("ACC FILTERED: X=%.2f  Y=%.2f  Z=%.2f m/s²\r\n", acc_filtered[0],
+ acc_filtered[1], acc_filtered[2]);
+
+ printf("GYR RAW en d/s :      X=%.2f  Y=%.2f  Z=%.2f d/s\r\n", mpu6050.Gx,
+ mpu6050.Gy, mpu6050.Gz);
+ printf("GYR RAW en rad/s : X=%.2f  Y=%.2f  Z=%.2f rad/s\r\n", gyr_raw[0],
+ gyr_raw[1], gyr_raw[2]);
+ printf("GYR FILTERED: X=%.2f  Y=%.2f  Z=%.2f rad/s\r\n", gyr_filtered[0],
+ gyr_filtered[1], gyr_filtered[2]);
+
+ printf("\r\n===== KALMAN ESTIMATES =====\r\n");
+ printf("Roll:  %.2f°  |  Pitch: %.2f°\r\n", roll_est * RAD_TO_DEG,
+ pitch_est * RAD_TO_DEG);
+
+ printf("\r\n===== CONTROLLER OUTPUTS =====\r\n");
+ printf("Ctrl_Roll:  %.2f  |  Ctrl_Pitch: %.2f\r\n", ctrl_roll_output,
+ ctrl_pitch_output);
+
+ printf("\r\n===== MOTOR COMMANDS =====\r\n");
+ printf("FR: %4d  FL: %4d  RR: %4d  RL: %4d  [%s]\r\n", motors.FR, motors.FL,
+ motors.RR, motors.RL, motors_armed ? "ARMED" : "DISARMED");
+ printf("\r\n===== MOTOR PWM OUTPUT =====\r\n");
+ printf("PWM_FR: %4d  |  PWM_FL: %4d\r\n", pwm_fr, pwm_fl);
+ printf("PWM_RR: %4d  |  PWM_RL: %4d\r\n", pwm_rr, pwm_rl);
+ printf("PWM RANGE: [%d - %d]\r\n", PWM_MIN_US, PWM_MAX_US);
+
+ printf("===============================\r\n\r\n");
+ }*/
+
 /**
  * @brief System Clock Configuration
  * @retval None
