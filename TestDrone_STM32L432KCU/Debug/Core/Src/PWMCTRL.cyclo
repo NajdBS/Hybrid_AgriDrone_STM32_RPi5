@@ -6,5 +6,5 @@
 ../Core/Src/PWMCTRL.c:102:6:ESC_Disarm	1
 ../Core/Src/PWMCTRL.c:114:6:ESC_UpdateCommands	2
 ../Core/Src/PWMCTRL.c:155:6:ESC_SetSpeed	2
-../Core/Src/PWMCTRL.c:180:6:ESC_EmergencyStop	1
-../Core/Src/PWMCTRL.c:190:9:ESC_SafetyCheck	3
+../Core/Src/PWMCTRL.c:181:6:ESC_EmergencyStop	1
+../Core/Src/PWMCTRL.c:191:9:ESC_SafetyCheck	3
