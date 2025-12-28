@@ -7,7 +7,6 @@
  *
  * Description:
  * Configuration parameters for the Flight Controller.
- * Cleaned up: No Baro, No Mag, No hardware PWM defines (handled by driver).
  */
 
 #ifndef DEFINES_H
@@ -91,6 +90,9 @@
 #define RC_TO_ROLL_ANGLE_SETPOINT  (20.0f * DEG_TO_RAD)
 #define RC_TO_PITCH_ANGLE_SETPOINT (20.0f * DEG_TO_RAD)
 #define RC_TO_YAW_RATE_SETPOINT    (45.0f * DEG_TO_RAD)
+
+#define CMD_TILT_ANGLE (10.0f * DEG_TO_RAD)
+
 /* (OLD)
 #define RC_TO_ROLL_ANGLE_SETPOINT (10.0f * DEG_TO_RAD)
 #define RC_TO_PITCH_ANGLE_SETPOINT (10.0f * DEG_TO_RAD)

@@ -46,9 +46,12 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-
 I2C_HandleTypeDef hi2c1;
+
 TIM_HandleTypeDef htim1;
+TIM_HandleTypeDef htim2;
+
+UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
@@ -94,9 +97,18 @@ float pitch_setpoint = 0.0f;
 float ctrl_roll_output = 0.0f;
 float ctrl_pitch_output = 0.0f;
 
-/* --- Commands (UART/Bluetooth) --- */
-volatile uint8_t rx_data;
+/* --- Commands (UART/Bluetooth/Zigbee) --- */
+
+/* Bluetooth (Pilot) */
 volatile int16_t throttle_cmd = 0;
+volatile uint8_t rx_pilot_byte;       // Byte received from Phone/PC
+volatile float target_pitch = 0.0f;   // Desired Pitch Angle (Radians)
+volatile float target_roll = 0.0f;    // Desired Roll Angle (Radians)
+
+/* Zigbee (Agri Sensor) */
+volatile uint8_t rx_zigbee_byte;      // Byte received from Sensor
+char zigbee_buffer[64];               // Buffer to store the full message
+volatile uint8_t zigbee_idx = 0;      // Buffer index
 
 /* USER CODE END PV */
 
@@ -106,6 +118,8 @@ static void MX_GPIO_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_TIM1_Init(void);
 static void MX_USART2_UART_Init(void);
+static void MX_TIM2_Init(void);
+static void MX_USART1_UART_Init(void);
 /* USER CODE BEGIN PFP */
 
 void Modules_Init(void);        // Initialize all sensors and libraries
@@ -126,41 +140,80 @@ void Debug_Print(void);         // Send Telemetry via UART
 /* USER CODE BEGIN 4 */
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
-	if (huart->Instance == USART2) {
 
-		// Command: Increase Throttle (+)
-		if (rx_data == '+') {
-			if (throttle_cmd + 50 <= MOTOR_SAFE_MAX) {
-				throttle_cmd += 50;
-			} else {
-				throttle_cmd = MOTOR_SAFE_MAX;
-			}
-		}
-		// Command: Decrease Throttle (-)
-		else if (rx_data == '-') {
-			if (throttle_cmd - 50 >= 0) {
-				throttle_cmd -= 50;
-			} else {
-				throttle_cmd = 0;
-			}
-		}
-		// Command: ARM ('a' or 'A')
-		else if (rx_data == 'a' || rx_data == 'A') {
-			motors_armed = 1;
-			ESC_Arm(&motors);
-		}
-		// Command: DISARM ('d' or 'D')
-		else if (rx_data == 'd' || rx_data == 'D') {
-			motors_armed = 0;
-			throttle_cmd = 0;
-			ESC_Disarm(&motors);
-		}
+    // PILOT COMMANDS (Bluetooth/USB via USART2)
+    if (huart->Instance == USART2) {
 
-		// Re-enable Interrupt for next character
-		HAL_UART_Receive_IT(&huart2, (uint8_t*) &rx_data, 1);
-	}
+        // THROTTLE & ARMING
+        if (rx_pilot_byte == 'a') {            // ARM
+            motors_armed = 1;
+            ESC_Arm(&motors);
+        }
+        else if (rx_pilot_byte == 'd') {       // DISARM
+            motors_armed = 0;
+            throttle_cmd = 0;
+            ESC_Disarm(&motors);
+        }
+        else if (rx_pilot_byte == '+') {       // Increase Throttle
+            if (throttle_cmd + 50 <= MOTOR_SAFE_MAX) throttle_cmd += 50;
+        }
+        else if (rx_pilot_byte == '-') {       // Decrease Throttle
+            if (throttle_cmd - 50 >= 0) throttle_cmd -= 50;
+        }
+        /*
+        // STEERING (W A S D)
+        // Sets the target angle. When you release, send 'X' or center stick to reset.
+        else if (rx_pilot_byte == 'w') {       // Forward (Nose Down)
+            target_pitch = -CMD_TILT_ANGLE;
+            target_roll  = 0.0f;
+        }
+        else if (rx_pilot_byte == 's') {       // Backward (Nose Up)
+            target_pitch = CMD_TILT_ANGLE;
+            target_roll  = 0.0f;
+        }
+        else if (rx_pilot_byte == 'a') {       // Left (Left Wing Down)
+            target_pitch = 0.0f;
+            target_roll  = -CMD_TILT_ANGLE;
+        }
+        else if (rx_pilot_byte == 'd') {       // Right (Right Wing Down)
+            target_pitch = 0.0f;
+            target_roll  = CMD_TILT_ANGLE;
+        }
+        else if (rx_pilot_byte == 'x') {       // STABILIZE (Reset to Flat)
+            target_pitch = 0.0f;
+            target_roll  = 0.0f;
+        }
+		*/
+        // Restart Listening on UART2
+        HAL_UART_Receive_IT(&huart2, (uint8_t*) &rx_pilot_byte, 1);
+    }
+    /*
+    // AGRI SENSOR DATA (Zigbee via USART1)
+    else if (huart->Instance == USART1) {
+
+        // Store byte in buffer
+        if (zigbee_idx < 63) {
+            zigbee_buffer[zigbee_idx++] = rx_zigbee_byte;
+        }
+
+        // Check for End of Line (Sensor must send '\n')
+        if (rx_zigbee_byte == '\n') {
+            zigbee_buffer[zigbee_idx] = '\0'; // Null-terminate string
+
+            // RELAY LOGIC: Send received data to Pilot (Bluetooth)
+            // Format: "SENS: [Data]"
+            char relay_msg[80];
+            sprintf(relay_msg, "SENS: %s", zigbee_buffer);
+            HAL_UART_Transmit(&huart2, (uint8_t*)relay_msg, strlen(relay_msg), 10);
+
+            // Reset buffer
+            zigbee_index = 0;
+        }
+
+        // Restart Listening on UART1
+        HAL_UART_Receive_IT(&huart1, (uint8_t*) &rx_zigbee_byte, 1);
+    }*/
 }
-
 /**
  * @brief Redirect printf to UART2
  * Allows using printf() for debugging over Bluetooth/USB.
@@ -169,8 +222,17 @@ int _write(int file, char *ptr, int len) {
 	HAL_UART_Transmit(&huart2, (uint8_t*) ptr, len, HAL_MAX_DELAY);
 	return len;
 }
-
 /* USER CODE END 4 */
+
+/*
+ * ****************************************************************************
+****************************************************************************
+
+!!! CHANGE UART RX_PIN FROM VCP TO DESIGNATED PIN TO WORK WITH BLE !!!
+
+****************************************************************************
+*****************************************************************************/
+
 int main(void) {
 
 	/* USER CODE BEGIN 1 */
@@ -198,7 +260,8 @@ int main(void) {
 	MX_I2C1_Init();
 	MX_TIM1_Init();
 	MX_USART2_UART_Init();
-
+	MX_TIM2_Init();
+	MX_USART1_UART_Init();
 	/* USER CODE BEGIN 2 */
 	printf("\r\n==================================\r\n");
 	printf("   STM32 FLIGHT CONTROLLER V1.0   \r\n");
@@ -219,7 +282,8 @@ int main(void) {
 	printf("System Ready. Waiting for ARM command ('a')...\r\n");
 
 	/* Start listening for Bluetooth commands */
-	HAL_UART_Receive_IT(&huart2, (uint8_t*) &rx_data, 1);
+	HAL_UART_Receive_IT(&huart2, (uint8_t *)&rx_pilot_byte, 1);  // Pilot (BLE)
+	HAL_UART_Receive_IT(&huart1, (uint8_t *)&rx_zigbee_byte, 1); // Zigbee
 
 	/* Reset Timing Counters */
 	time_prev_loop = HAL_GetTick();
@@ -229,6 +293,7 @@ int main(void) {
 	/* Infinite loop */
 	/* USER CODE BEGIN WHILE */
 	while (1) {
+
 		time_now = HAL_GetTick();
 
 		/* --- CONTROL LOOP (100Hz / 10ms) --- */
@@ -244,16 +309,20 @@ int main(void) {
 			HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
 			Debug_Print();
 		}
+
 	}
+	/* USER CODE END WHILE */
+
+	/* USER CODE BEGIN 3 */
+
 	/* USER CODE END 3 */
 }
-/* USER CODE BEGIN 4 */
-
 /**
  * @brief Initialize all flight software modules
  */
+/* USER CODE BEGIN 5 */
 void Modules_Init(void) {
-	// 1. Initialize MPU6050
+	// Initialize MPU6050
 	if (MPU6050_Init(&hi2c1) == 0) {
 		printf("MPU6050: OK\r\n");
 	} else {
@@ -261,7 +330,7 @@ void Modules_Init(void) {
 		Error_Handler(); // Stop here if sensor fails
 	}
 
-	// 2. Initialize Low Pass Filters
+	// Initialize Low Pass Filters
 	// Accel Cutoff: 10Hz | Gyro Cutoff: 30Hz | Loop Time: 0.01s
 	float dt = SAMPLE_TIME_CTRL_MS / 1000.0f;
 
@@ -273,16 +342,16 @@ void Modules_Init(void) {
 	LPFTwoPole_Init(&lpf_gyr_y, LPF_TYPE_BESSEL, LPF_GYR_CUTOFF_HZ, dt);
 	LPFTwoPole_Init(&lpf_gyr_z, LPF_TYPE_BESSEL, LPF_GYR_CUTOFF_HZ, dt);
 
-	// 3. Initialize Kalman Filter
+	// Initialize Kalman Filter
 	float Q[2] = { EKF_N_GYR, EKF_N_GYR };
 	float R[3] = { EKF_N_ACC, EKF_N_ACC, EKF_N_ACC };
 	KalmanRollPitch_Init(&ekf, EKF_P_INIT, Q, R);
 
-	// 4. Initialize PID Controllers
+	// Initialize PID Controllers
 	PI_Init(&ctrl_roll, CTRL_ROLL_P, CTRL_ROLL_I, CTRL_ROLL_LIM_MIN,
-			CTRL_ROLL_LIM_MAX);
+	CTRL_ROLL_LIM_MAX);
 	PI_Init(&ctrl_pitch, CTRL_PITCH_P, CTRL_PITCH_I, CTRL_PITCH_LIM_MIN,
-			CTRL_PITCH_LIM_MAX);
+	CTRL_PITCH_LIM_MAX);
 
 	printf("Modules Initialized.\r\n");
 }
@@ -336,6 +405,10 @@ void Process_Loop_100Hz(void) {
 	// TODO: Map rx_data/joystick to these values later for steering
 	roll_setpoint = 0.0f;
 	pitch_setpoint = 0.0f;
+	/*
+	// Apply the setpoints received from Bluetooth
+	roll_setpoint  = target_roll;
+	pitch_setpoint = target_pitch;*/
 
 	ctrl_roll_output = PI_Update(&ctrl_roll, roll_setpoint, roll_est, dt);
 	ctrl_pitch_output = PI_Update(&ctrl_pitch, pitch_setpoint, pitch_est, dt);
@@ -381,8 +454,6 @@ void Debug_Print(void) {
 			motors_armed ? "ARMED" : "SAFE");
 }
 
-/* USER CODE END 4 */
-
 /* Debug print to serial, including raw and filtered values */
 /*void Debug_Print(void) {
  printf("\r\n===== SENSOR DATA =====\r\n");
@@ -419,7 +490,7 @@ void Debug_Print(void) {
 
  printf("===============================\r\n\r\n");
  }*/
-
+/* USER CODE END 5 */
 /**
  * @brief System Clock Configuration
  * @retval None
@@ -565,14 +636,6 @@ static void MX_TIM1_Init(void) {
 			!= HAL_OK) {
 		Error_Handler();
 	}
-	if (HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_2)
-			!= HAL_OK) {
-		Error_Handler();
-	}
-	if (HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_3)
-			!= HAL_OK) {
-		Error_Handler();
-	}
 	if (HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_4)
 			!= HAL_OK) {
 		Error_Handler();
@@ -596,6 +659,98 @@ static void MX_TIM1_Init(void) {
 
 	/* USER CODE END TIM1_Init 2 */
 	HAL_TIM_MspPostInit(&htim1);
+
+}
+
+/**
+ * @brief TIM2 Initialization Function
+ * @param None
+ * @retval None
+ */
+static void MX_TIM2_Init(void) {
+
+	/* USER CODE BEGIN TIM2_Init 0 */
+
+	/* USER CODE END TIM2_Init 0 */
+
+	TIM_ClockConfigTypeDef sClockSourceConfig = { 0 };
+	TIM_MasterConfigTypeDef sMasterConfig = { 0 };
+	TIM_OC_InitTypeDef sConfigOC = { 0 };
+
+	/* USER CODE BEGIN TIM2_Init 1 */
+
+	/* USER CODE END TIM2_Init 1 */
+	htim2.Instance = TIM2;
+	htim2.Init.Prescaler = 80 - 1;
+	htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
+	htim2.Init.Period = 20000 - 1;
+	htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+	htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+	if (HAL_TIM_Base_Init(&htim2) != HAL_OK) {
+		Error_Handler();
+	}
+	sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+	if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK) {
+		Error_Handler();
+	}
+	if (HAL_TIM_PWM_Init(&htim2) != HAL_OK) {
+		Error_Handler();
+	}
+	sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+	sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+	if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig)
+			!= HAL_OK) {
+		Error_Handler();
+	}
+	sConfigOC.OCMode = TIM_OCMODE_PWM1;
+	sConfigOC.Pulse = 0;
+	sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+	sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+	if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_1)
+			!= HAL_OK) {
+		Error_Handler();
+	}
+	if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_2)
+			!= HAL_OK) {
+		Error_Handler();
+	}
+	/* USER CODE BEGIN TIM2_Init 2 */
+
+	/* USER CODE END TIM2_Init 2 */
+	HAL_TIM_MspPostInit(&htim2);
+
+}
+
+/**
+ * @brief USART1 Initialization Function
+ * @param None
+ * @retval None
+ */
+static void MX_USART1_UART_Init(void) {
+
+	/* USER CODE BEGIN USART1_Init 0 */
+
+	/* USER CODE END USART1_Init 0 */
+
+	/* USER CODE BEGIN USART1_Init 1 */
+
+	/* USER CODE END USART1_Init 1 */
+	huart1.Instance = USART1;
+	huart1.Init.BaudRate = 115200;
+	huart1.Init.WordLength = UART_WORDLENGTH_8B;
+	huart1.Init.StopBits = UART_STOPBITS_1;
+	huart1.Init.Parity = UART_PARITY_NONE;
+	huart1.Init.Mode = UART_MODE_TX_RX;
+	huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+	huart1.Init.OverSampling = UART_OVERSAMPLING_16;
+	huart1.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+	huart1.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+	if (HAL_UART_Init(&huart1) != HAL_OK) {
+		Error_Handler();
+	}
+	/* USER CODE BEGIN USART1_Init 2 */
+
+	/* USER CODE END USART1_Init 2 */
 
 }
 
@@ -660,10 +815,6 @@ static void MX_GPIO_Init(void) {
 	/* USER CODE BEGIN MX_GPIO_Init_2 */
 	/* USER CODE END MX_GPIO_Init_2 */
 }
-
-/* USER CODE BEGIN 4 */
-
-/* USER CODE END 4 */
 
 /**
  * @brief  Period elapsed callback in non blocking mode

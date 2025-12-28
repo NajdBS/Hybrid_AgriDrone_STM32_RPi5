@@ -8,10 +8,10 @@
  * Description:
  * Implementation of Motor Control and Mixing Logic.
  * Wiring Assumption (Based on our drone):
- * - TIM1 CH1 -> RR (Rear Right)
- * - TIM1 CH2 -> FL (Front Left)
- * - TIM1 CH3 -> FR (Front Right)
- * - TIM1 CH4 -> RL (Rear Left)
+ * - TIM1 CH1 -> RR (Rear Right) (PA8)
+ * - TIM1 CH2 -> FL (Front Left)  Changed to //- TIM2 CH1 -> FL (Front Left) (PA9)-> (PA5) //
+ * - TIM1 CH3 -> FR (Front Right) Changed to //- TIM2 CH2 -> FR (Front Right)(PA10)-> (PA1) //
+ * - TIM1 CH4 -> RL (Rear Left) (PA11)
  */
 
 #include "PWMCTRL.h"
@@ -49,10 +49,12 @@ void ESC_Init(ESC_CONF *esc) {
     esc->state = DISARMED;
 
     // Start PWM Hardware
-    HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
-    HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
-    HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_3);
-    HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_4);
+    HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1); // RR
+    HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_4); // RL
+
+    HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1); // FL
+    HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2); // FR
+
 
     // Initial output: Min PWM
     ESC_SetSpeed(esc);
@@ -66,16 +68,16 @@ void ESC_Calibrate(ESC_CONF *esc) {
 
     // 1. High Signal
     __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, PWM_MAX_US);
-    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, PWM_MAX_US);
-    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_3, PWM_MAX_US);
     __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_4, PWM_MAX_US);
+    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, PWM_MAX_US);
+    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, PWM_MAX_US);
     HAL_Delay(2000); // Wait for beep
 
     // 2. Low Signal
     __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, PWM_MIN_US);
-    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, PWM_MIN_US);
-    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_3, PWM_MIN_US);
     __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_4, PWM_MIN_US);
+    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, PWM_MIN_US);
+    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, PWM_MIN_US);
     HAL_Delay(2000); // Wait for confirmation beep
 
     esc->state = DISARMED;
@@ -140,7 +142,7 @@ void ESC_SetSpeed(ESC_CONF *esc) {
     if (esc->state == DISARMED) {
         pwm1 = pwm2 = pwm3 = pwm4 = PWM_MIN_US;
     } else {
-        // Map according to YOUR wiring setup:
+        // Map according to wiring setup:
         // CH1=RR, CH2=FL, CH3=FR, CH4=RL
         pwm1 = command_to_pwm(esc->RR); // Channel 1
         pwm2 = command_to_pwm(esc->FL); // Channel 2
@@ -155,19 +157,20 @@ void ESC_SetSpeed(ESC_CONF *esc) {
     pwm_rl_debug = pwm4;
 
     // Write to Hardware Registers
-    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, pwm1);
-    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, pwm2);
-    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_3, pwm3);
-    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_4, pwm4);
+    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, pwm1); // RR
+    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_4, pwm4); // RL
+
+    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, pwm2); // FL
+    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, pwm3); // FR
 }
 
 void ESC_EmergencyStop(ESC_CONF *esc) {
     ESC_Disarm(esc);
     // Redundant safety set
     __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, PWM_MIN_US);
-    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, PWM_MIN_US);
-    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_3, PWM_MIN_US);
     __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_4, PWM_MIN_US);
+    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, PWM_MIN_US);
+    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, PWM_MIN_US);
 }
 
 uint8_t ESC_SafetyCheck(ESC_CONF *esc, float roll_deg, float pitch_deg) {

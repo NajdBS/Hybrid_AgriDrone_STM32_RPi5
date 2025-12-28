@@ -29,6 +29,7 @@
 
 /* Timer Handler defined in main.c */
 extern TIM_HandleTypeDef htim1;
+extern TIM_HandleTypeDef htim2;
 
 /* PWM Signal Constants (microseconds) */
 #define PWM_MIN_US          1000    // Motor Stopped
