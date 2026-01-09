@@ -8,4 +8,4 @@ Nous avons ainsi implémenté l'architecture suivante :
 Communication Pilote (UART2) : Implémentation d'une logique de commande digitale (touches W/A/S/D) convertissant des ordres binaires en consignes d'angle fixes pour les PID.
 Mission Agricole (UART1) : Système de relais de données transparent. Les informations reçues par le module Zigbee (capteurs au sol) sont bufferisées par le STM32 et automatiquement retransmises vers l'interface de contrôle du pilote.
 
-Le code est désormais complet, sécurisé (Safe-Start) et compile sans erreur. La prochaine étape sera le test d'intégration matérielle.
+Le code est désormais complet, sécurisé (Safe-Start) et compile sans erreur. La prochaine étape sera le test d'intégration matérielle
