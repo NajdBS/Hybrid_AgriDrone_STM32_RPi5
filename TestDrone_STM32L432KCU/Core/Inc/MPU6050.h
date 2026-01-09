@@ -4,12 +4,7 @@
  *  Created on: Nov 15, 2025
  *      Author: Najd Ben Saad
  */
-/*
- * mpu6050.h
- *
- *  Created on: Nov 13, 2019
- *      Author: Bulanov Konstantin
- */
+
 #ifndef INC_MPU6050_H_
 #define INC_MPU6050_H_
 

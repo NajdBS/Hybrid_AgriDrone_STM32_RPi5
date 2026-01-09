@@ -305,7 +305,7 @@ int main(void) {
 		/* --- TELEMETRY LOOP (1Hz / 1000ms) --- */
 		if (time_now - time_prev_led >= SAMPLE_TIME_LED_MS) {
 			time_prev_led = time_now;
-			// Blink LED to indicate "Alive"
+			// Blink LED to indicate "Alive"*******************************VERIFY THIS
 			HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
 			Debug_Print();
 		}

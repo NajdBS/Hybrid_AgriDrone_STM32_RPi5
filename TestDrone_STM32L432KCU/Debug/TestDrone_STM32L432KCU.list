@@ -37,11 +37,11 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  16 .debug_macro  00023371  00000000  00000000  0002b182  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 17 .debug_line   0001a6aa  00000000  00000000  0004e4f3  2**0
+ 17 .debug_line   0001a6a9  00000000  00000000  0004e4f3  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 18 .debug_str    000d125c  00000000  00000000  00068b9d  2**0
+ 18 .debug_str    000d125c  00000000  00000000  00068b9c  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .comment      00000043  00000000  00000000  00139df9  2**0
+ 19 .comment      00000043  00000000  00000000  00139df8  2**0
                   CONTENTS, READONLY
  20 .debug_frame  00006848  00000000  00000000  00139e3c  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
@@ -4365,7 +4365,7 @@ int main(void) {
  8002b8c:	681b      	ldr	r3, [r3, #0]
  8002b8e:	4a0e      	ldr	r2, [pc, #56]	@ (8002bc8 <main+0xe8>)
  8002b90:	6013      	str	r3, [r2, #0]
-			// Blink LED to indicate "Alive"
+			// Blink LED to indicate "Alive"*******************************VERIFY THIS
 			HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
  8002b92:	2108      	movs	r1, #8
  8002b94:	480e      	ldr	r0, [pc, #56]	@ (8002bd0 <main+0xf0>)
