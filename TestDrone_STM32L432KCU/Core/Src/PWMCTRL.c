@@ -9,7 +9,7 @@
  * Implementation of Motor Control and Mixing Logic.
  * Wiring Assumption (Based on our drone):
  * - TIM1 CH1 -> RR (Rear Right) (PA8)
- * - TIM1 CH2 -> FL (Front Left)  Changed to //- TIM2 CH1 -> FL (Front Left) (PA9)-> (PA5) //
+ * - TIM1 CH2 -> FL (Front Left)  Changed to //- TIM2 CH1 -> FL (Front Left) (PA9)-> (PA5)-> (PA3) //
  * - TIM1 CH3 -> FR (Front Right) Changed to //- TIM2 CH2 -> FR (Front Right)(PA10)-> (PA1) //
  * - TIM1 CH4 -> RL (Rear Left) (PA11)
  */
@@ -52,7 +52,8 @@ void ESC_Init(ESC_CONF *esc) {
     HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1); // RR
     HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_4); // RL
 
-    HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1); // FL
+    //HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1); // FL
+    HAL_TIM_PWM_Start(&htim15, TIM_CHANNEL_2); // FL
     HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2); // FR
 
 
@@ -69,14 +70,14 @@ void ESC_Calibrate(ESC_CONF *esc) {
     // 1. High Signal
     __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, PWM_MAX_US);
     __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_4, PWM_MAX_US);
-    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, PWM_MAX_US);
+    __HAL_TIM_SET_COMPARE(&htim15, TIM_CHANNEL_2, PWM_MAX_US);
     __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, PWM_MAX_US);
     HAL_Delay(2000); // Wait for beep
 
     // 2. Low Signal
     __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, PWM_MIN_US);
     __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_4, PWM_MIN_US);
-    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, PWM_MIN_US);
+    __HAL_TIM_SET_COMPARE(&htim15, TIM_CHANNEL_2, PWM_MIN_US);
     __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, PWM_MIN_US);
     HAL_Delay(2000); // Wait for confirmation beep
 
@@ -160,7 +161,7 @@ void ESC_SetSpeed(ESC_CONF *esc) {
     __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, pwm1); // RR
     __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_4, pwm4); // RL
 
-    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, pwm2); // FL
+    __HAL_TIM_SET_COMPARE(&htim15, TIM_CHANNEL_2, pwm2); // FL
     __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, pwm3); // FR
 }
 
@@ -169,7 +170,7 @@ void ESC_EmergencyStop(ESC_CONF *esc) {
     // Redundant safety set
     __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, PWM_MIN_US);
     __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_4, PWM_MIN_US);
-    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, PWM_MIN_US);
+    __HAL_TIM_SET_COMPARE(&htim15, TIM_CHANNEL_2, PWM_MIN_US);
     __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, PWM_MIN_US);
 }
 

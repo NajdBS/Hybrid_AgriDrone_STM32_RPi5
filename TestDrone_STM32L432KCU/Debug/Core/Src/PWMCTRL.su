@@ -1,10 +1,10 @@
 ../Core/Src/PWMCTRL.c:28:23:clamp	16	static
 ../Core/Src/PWMCTRL.c:37:24:command_to_pwm	24	static
 ../Core/Src/PWMCTRL.c:46:6:ESC_Init	16	static
-../Core/Src/PWMCTRL.c:66:6:ESC_Calibrate	16	static
-../Core/Src/PWMCTRL.c:86:6:ESC_Arm	16	static
-../Core/Src/PWMCTRL.c:91:6:ESC_Disarm	16	static
-../Core/Src/PWMCTRL.c:97:6:ESC_UpdateCommands	48	static
-../Core/Src/PWMCTRL.c:139:6:ESC_SetSpeed	24	static
-../Core/Src/PWMCTRL.c:167:6:ESC_EmergencyStop	16	static
-../Core/Src/PWMCTRL.c:176:9:ESC_SafetyCheck	24	static
+../Core/Src/PWMCTRL.c:67:6:ESC_Calibrate	16	static
+../Core/Src/PWMCTRL.c:87:6:ESC_Arm	16	static
+../Core/Src/PWMCTRL.c:92:6:ESC_Disarm	16	static
+../Core/Src/PWMCTRL.c:98:6:ESC_UpdateCommands	48	static
+../Core/Src/PWMCTRL.c:140:6:ESC_SetSpeed	24	static
+../Core/Src/PWMCTRL.c:168:6:ESC_EmergencyStop	16	static
+../Core/Src/PWMCTRL.c:177:9:ESC_SafetyCheck	24	static

@@ -14,11 +14,17 @@
 
 /* LOOP TIMING & SYNCHRONIZATION */
 /* Accelerometer and Gyroscope sampling rate (10ms = 100Hz) */
-#define SAMPLE_TIME_ACC_MS  10  // Synced with Gyro for Kalman stability
-#define SAMPLE_TIME_GYR_MS  10
+//#define SAMPLE_TIME_ACC_MS  10  // Synced with Gyro for Kalman stability
+//#define SAMPLE_TIME_GYR_MS  10
 /* Sample times (OLD)
 #define SAMPLE_TIME_ACC_MS  16
 #define SAMPLE_TIME_GYR_MS  10*/
+
+/* Sample times */
+#define SAMPLE_TIME_ACC_MS  16
+#define SAMPLE_TIME_GYR_MS  10
+#define SAMPLE_TIME_CTRL_MS 4
+#define SAMPLE_TIME_LED_MS  1000
 
 
 /* Command update rate (Bluetooth/RC) */
@@ -26,8 +32,8 @@
 //#define SAMPLE_TIME_RC_MS   10
 
 /* Main Control Loop Frequency (10ms = 100Hz) */
-#define SAMPLE_TIME_CTRL_MS 10
 //#define SAMPLE_TIME_CTRL_MS 10
+
 
 /* LED Status blink rate (1000ms = 1Hz) - Heartbeat */
 #define SAMPLE_TIME_LED_MS  1000
@@ -91,7 +97,7 @@
 #define RC_TO_PITCH_ANGLE_SETPOINT (20.0f * DEG_TO_RAD)
 #define RC_TO_YAW_RATE_SETPOINT    (45.0f * DEG_TO_RAD)
 
-#define CMD_TILT_ANGLE (10.0f * DEG_TO_RAD)
+#define CMD_TILT_ANGLE (40.0f * DEG_TO_RAD)
 
 /* (OLD)
 #define RC_TO_ROLL_ANGLE_SETPOINT (10.0f * DEG_TO_RAD)
