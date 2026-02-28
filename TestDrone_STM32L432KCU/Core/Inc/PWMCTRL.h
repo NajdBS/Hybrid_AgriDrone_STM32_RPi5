@@ -30,7 +30,7 @@
 /* Timer Handler defined in main.c */
 extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim2;
-extern TIM_HandleTypeDef htim15;
+//extern TIM_HandleTypeDef htim16;
 
 /* PWM Signal Constants (microseconds) */
 #define PWM_MIN_US          1000    // Motor Stopped
@@ -40,7 +40,7 @@ extern TIM_HandleTypeDef htim15;
 /* Motor command settings */
 #define MOTOR_CMD_MIN       0
 #define MOTOR_FULL_SCALE    1000
-#define MOTOR_SAFE_MAX       600     // Safety Limit for testing (max 60%)
+#define MOTOR_SAFE_MAX       950     // Safety Limit for testing (max 60%)
 //#define MOTOR_CMD_MAX       600
 
 /* Safety */

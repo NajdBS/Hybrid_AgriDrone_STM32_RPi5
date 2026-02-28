@@ -37,6 +37,7 @@
 
 /* LED Status blink rate (1000ms = 1Hz) - Heartbeat */
 #define SAMPLE_TIME_LED_MS  1000
+#define TELEMETRY_DELAY_MS 5000
 
 /* DIGITAL LOW-PASS FILTERS */
 /* Filters mechanical vibration from sensors */
@@ -97,7 +98,7 @@
 #define RC_TO_PITCH_ANGLE_SETPOINT (20.0f * DEG_TO_RAD)
 #define RC_TO_YAW_RATE_SETPOINT    (45.0f * DEG_TO_RAD)
 
-#define CMD_TILT_ANGLE (40.0f * DEG_TO_RAD)
+#define CMD_TILT_ANGLE (20.0f * DEG_TO_RAD)
 
 /* (OLD)
 #define RC_TO_ROLL_ANGLE_SETPOINT (10.0f * DEG_TO_RAD)
