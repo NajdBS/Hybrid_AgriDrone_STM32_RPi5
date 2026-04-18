@@ -48,6 +48,16 @@ La communication entre la balise au sol et le drone repose sur une liaison UART.
 
 ---
 
+## 🧩 Intégration Matérielle : Shield STM32 Custom
+
+Pour garantir une stabilité de vol optimale, le capteur inertiel ne pouvait pas être simplement posé sur une breadboard ou accroché avec des fils volants. *(Voir l'image `nucleo_sensor_shield.jpg`)*
+
+Nous avons conçu un **Shield (carte d'accueil) sur-mesure** pour la carte STM32 Nucleo. Ce circuit imprimé remplit deux rôles critiques :
+1. **Fixation mécanique du MPU6050 :** Il offre une interface I2C rigide et parfaitement alignée avec le centre de gravité du drone, limitant ainsi les perturbations et les vibrations parasites.
+2. **Routage des communications :** Il centralise les connexions vers les différents modules (I2C pour l'IMU, UART pour la télémétrie).
+
+> ⚠️ **Note d'ingénierie (Erratum Matériel) :** > Le schéma de ce shield correspond à la version V1.0 du PCB, qui comporte une erreur de mapping sur les broches de l'interface UART2. Lors de l'assemblage final du drone, l'UART2 (utilisé pour la communication avec la Raspberry Pi) a dû être re-routé manuellement vers les bonnes broches physiques de la Nucleo.
+
 ## 🛠️ Déploiement et Automatisation
 
 ### 💡 Astuces de Travail (Headless & Transferts)
