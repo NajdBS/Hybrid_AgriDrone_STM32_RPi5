@@ -58,6 +58,14 @@ Nous avons conçu un **Shield (carte d'accueil) sur-mesure** pour la carte STM32
 
 > ⚠️ **Note d'ingénierie (Erratum Matériel) :** > Le schéma de ce shield correspond à la version V1.0 du PCB, qui comporte une erreur de mapping sur les broches de l'interface UART2. Lors de l'assemblage final du drone, l'UART2 (utilisé pour la communication avec la Raspberry Pi) a dû être re-routé manuellement vers les bonnes broches physiques de la Nucleo.
 
+## 📷 Intégration de la Caméra (Vision verticale)
+
+La caméra Raspberry Pi (Module v2) est installée **sous le châssis du drone**, avec une orientation à 90° vers le sol (vue Nadir). *(L'euphorie du montage ayant fait obstacle à la prise d'une photo de la partie inférieure ! xD)*
+
+Cette configuration est essentielle au système de navigation assistée :
+1. **Installation matérielle :** La connexion est établie directement avec la Raspberry Pi 5 via une nappe (ribbon cable). L'ajout de silentblocs (amortisseurs) permet d'isoler le capteur des vibrations moteurs.
+2. **Fonctionnement logiciel :** Le flux vidéo est analysé en temps réel par l'algorithme OpenCV pour détecter la position des marqueurs ArUco. Ces coordonnées permettent de transmettre les corrections de trajectoire (X, Y) au contrôleur de vol STM32.
+
 ## 🛠️ Déploiement et Automatisation
 
 ### 💡 Astuces de Travail (Headless & Transferts)
