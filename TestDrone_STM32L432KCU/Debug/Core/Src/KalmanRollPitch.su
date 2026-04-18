@@ -1,3 +1,0 @@
-../Core/Src/KalmanRollPitch.c:19:6:KalmanRollPitch_Init	24	static
-../Core/Src/KalmanRollPitch.c:43:6:KalmanRollPitch_Predict	96	static
-../Core/Src/KalmanRollPitch.c:104:9:KalmanRollPitch_Update	224	static

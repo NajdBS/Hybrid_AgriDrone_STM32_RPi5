@@ -1,46 +1,0 @@
-Dependencies for Project 'Projet2AENSEA_ZigbeeNode', Target 'Target_1': (DO NOT MODIFY !)
-CompilerVersion: 6240000::V6.24::ARMCLANG
-F (.\main.c)(0x69965D3B)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-D__EVAL -gdwarf-4 -O0 -ffunction-sections -Wall -Wextra -Wno-packed -Wno-reserved-id-macro -Wno-unused-macros -Wno-documentation-unknown-command -Wno-documentation -Wno-license-management -Wno-parentheses-equality -Wno-reserved-identifier-I./RTE/_Target_1-I"C:/Users/Najd Ben Saad/AppData/Local/Arm/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include"-I"C:/Users/Najd Ben Saad/AppData/Local/Arm/Packs/Keil/STM32F4xx_DFP/2.17.1/Drivers/CMSIS/Device/ST/STM32F4xx/Include"-D__UVISION_VERSION="543" -DSTM32F407xx -D_RTE_-o ./objects/main.o -MMD)
-I (C:\Users\Najd Ben Saad\AppData\Local\Arm\Packs\Keil\STM32F4xx_DFP\2.17.1\Drivers\CMSIS\Device\ST\STM32F4xx\Include\stm32f4xx.h)(0x698F6E57)
-I (C:\Users\Najd Ben Saad\AppData\Local\Arm\Packs\Keil\STM32F4xx_DFP\2.17.1\Drivers\CMSIS\Device\ST\STM32F4xx\Include\stm32f407xx.h)(0x698F6E57)
-I (C:\Users\Najd Ben Saad\AppData\Local\Arm\Packs\ARM\CMSIS\6.3.0\CMSIS\Core\Include\core_cm4.h)(0x698F6EF5)
-I (C:\Users\Najd Ben Saad\AppData\Local\Arm\Packs\Keil\STM32F4xx_DFP\2.17.1\Drivers\CMSIS\Device\ST\STM32F4xx\Include\system_stm32f4xx.h)(0x698F6E57)
-I (USART.h)(0x698F703D)
-I (UTIL.h)(0x699636B6)
-I (ADC.h)(0x6996353D)
-I (I2C.h)(0x698F703D)
-F (.\I2C.c)(0x698F703D)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-D__EVAL -gdwarf-4 -O0 -ffunction-sections -Wall -Wextra -Wno-packed -Wno-reserved-id-macro -Wno-unused-macros -Wno-documentation-unknown-command -Wno-documentation -Wno-license-management -Wno-parentheses-equality -Wno-reserved-identifier-I./RTE/_Target_1-I"C:/Users/Najd Ben Saad/AppData/Local/Arm/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include"-I"C:/Users/Najd Ben Saad/AppData/Local/Arm/Packs/Keil/STM32F4xx_DFP/2.17.1/Drivers/CMSIS/Device/ST/STM32F4xx/Include"-D__UVISION_VERSION="543" -DSTM32F407xx -D_RTE_-o ./objects/i2c.o -MMD)
-I (I2C.h)(0x698F703D)
-I (C:\Users\Najd Ben Saad\AppData\Local\Arm\Packs\Keil\STM32F4xx_DFP\2.17.1\Drivers\CMSIS\Device\ST\STM32F4xx\Include\stm32f4xx.h)(0x698F6E57)
-I (C:\Users\Najd Ben Saad\AppData\Local\Arm\Packs\Keil\STM32F4xx_DFP\2.17.1\Drivers\CMSIS\Device\ST\STM32F4xx\Include\stm32f407xx.h)(0x698F6E57)
-I (C:\Users\Najd Ben Saad\AppData\Local\Arm\Packs\ARM\CMSIS\6.3.0\CMSIS\Core\Include\core_cm4.h)(0x698F6EF5)
-I (C:\Users\Najd Ben Saad\AppData\Local\Arm\Packs\Keil\STM32F4xx_DFP\2.17.1\Drivers\CMSIS\Device\ST\STM32F4xx\Include\system_stm32f4xx.h)(0x698F6E57)
-F (.\I2C.h)(0x698F703D)()
-F (.\USART.c)(0x698F7359)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-D__EVAL -gdwarf-4 -O0 -ffunction-sections -Wall -Wextra -Wno-packed -Wno-reserved-id-macro -Wno-unused-macros -Wno-documentation-unknown-command -Wno-documentation -Wno-license-management -Wno-parentheses-equality -Wno-reserved-identifier-I./RTE/_Target_1-I"C:/Users/Najd Ben Saad/AppData/Local/Arm/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include"-I"C:/Users/Najd Ben Saad/AppData/Local/Arm/Packs/Keil/STM32F4xx_DFP/2.17.1/Drivers/CMSIS/Device/ST/STM32F4xx/Include"-D__UVISION_VERSION="543" -DSTM32F407xx -D_RTE_-o ./objects/usart.o -MMD)
-I (USART.h)(0x698F703D)
-I (C:\Users\Najd Ben Saad\AppData\Local\Arm\Packs\Keil\STM32F4xx_DFP\2.17.1\Drivers\CMSIS\Device\ST\STM32F4xx\Include\stm32f4xx.h)(0x698F6E57)
-I (C:\Users\Najd Ben Saad\AppData\Local\Arm\Packs\Keil\STM32F4xx_DFP\2.17.1\Drivers\CMSIS\Device\ST\STM32F4xx\Include\stm32f407xx.h)(0x698F6E57)
-I (C:\Users\Najd Ben Saad\AppData\Local\Arm\Packs\ARM\CMSIS\6.3.0\CMSIS\Core\Include\core_cm4.h)(0x698F6EF5)
-I (C:\Users\Najd Ben Saad\AppData\Local\Arm\Packs\Keil\STM32F4xx_DFP\2.17.1\Drivers\CMSIS\Device\ST\STM32F4xx\Include\system_stm32f4xx.h)(0x698F6E57)
-I (UTIL.h)(0x699636B6)
-F (.\USART.h)(0x698F703D)()
-F (.\UTIL.c)(0x698F703D)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-D__EVAL -gdwarf-4 -O0 -ffunction-sections -Wall -Wextra -Wno-packed -Wno-reserved-id-macro -Wno-unused-macros -Wno-documentation-unknown-command -Wno-documentation -Wno-license-management -Wno-parentheses-equality -Wno-reserved-identifier-I./RTE/_Target_1-I"C:/Users/Najd Ben Saad/AppData/Local/Arm/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include"-I"C:/Users/Najd Ben Saad/AppData/Local/Arm/Packs/Keil/STM32F4xx_DFP/2.17.1/Drivers/CMSIS/Device/ST/STM32F4xx/Include"-D__UVISION_VERSION="543" -DSTM32F407xx -D_RTE_-o ./objects/util.o -MMD)
-I (UTIL.h)(0x699636B6)
-I (C:\Users\Najd Ben Saad\AppData\Local\Arm\Packs\Keil\STM32F4xx_DFP\2.17.1\Drivers\CMSIS\Device\ST\STM32F4xx\Include\stm32f4xx.h)(0x698F6E57)
-I (C:\Users\Najd Ben Saad\AppData\Local\Arm\Packs\Keil\STM32F4xx_DFP\2.17.1\Drivers\CMSIS\Device\ST\STM32F4xx\Include\stm32f407xx.h)(0x698F6E57)
-I (C:\Users\Najd Ben Saad\AppData\Local\Arm\Packs\ARM\CMSIS\6.3.0\CMSIS\Core\Include\core_cm4.h)(0x698F6EF5)
-I (C:\Users\Najd Ben Saad\AppData\Local\Arm\Packs\Keil\STM32F4xx_DFP\2.17.1\Drivers\CMSIS\Device\ST\STM32F4xx\Include\system_stm32f4xx.h)(0x698F6E57)
-F (.\UTIL.h)(0x699636B6)()
-F (.\ADC.c)(0x698F703D)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-D__EVAL -gdwarf-4 -O0 -ffunction-sections -Wall -Wextra -Wno-packed -Wno-reserved-id-macro -Wno-unused-macros -Wno-documentation-unknown-command -Wno-documentation -Wno-license-management -Wno-parentheses-equality -Wno-reserved-identifier-I./RTE/_Target_1-I"C:/Users/Najd Ben Saad/AppData/Local/Arm/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include"-I"C:/Users/Najd Ben Saad/AppData/Local/Arm/Packs/Keil/STM32F4xx_DFP/2.17.1/Drivers/CMSIS/Device/ST/STM32F4xx/Include"-D__UVISION_VERSION="543" -DSTM32F407xx -D_RTE_-o ./objects/adc.o -MMD)
-I (ADC.h)(0x6996353D)
-I (C:\Users\Najd Ben Saad\AppData\Local\Arm\Packs\Keil\STM32F4xx_DFP\2.17.1\Drivers\CMSIS\Device\ST\STM32F4xx\Include\stm32f4xx.h)(0x698F6E57)
-I (C:\Users\Najd Ben Saad\AppData\Local\Arm\Packs\Keil\STM32F4xx_DFP\2.17.1\Drivers\CMSIS\Device\ST\STM32F4xx\Include\stm32f407xx.h)(0x698F6E57)
-I (C:\Users\Najd Ben Saad\AppData\Local\Arm\Packs\ARM\CMSIS\6.3.0\CMSIS\Core\Include\core_cm4.h)(0x698F6EF5)
-I (C:\Users\Najd Ben Saad\AppData\Local\Arm\Packs\Keil\STM32F4xx_DFP\2.17.1\Drivers\CMSIS\Device\ST\STM32F4xx\Include\system_stm32f4xx.h)(0x698F6E57)
-F (.\ADC.h)(0x6996353D)()
-F (RTE/Device/STM32F407VGTx/startup_stm32f407xx.s)(0x698F6E57)(--target=arm-arm-none-eabi -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -masm=auto  -Wa,armasm,--diag_suppress=A1950W -c-gdwarf-4 -Wa,armasm,--pd,"__EVAL SETA 1"-I./RTE/_Target_1-I"C:/Users/Najd Ben Saad/AppData/Local/Arm/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include"-I"C:/Users/Najd Ben Saad/AppData/Local/Arm/Packs/Keil/STM32F4xx_DFP/2.17.1/Drivers/CMSIS/Device/ST/STM32F4xx/Include"-Wa,armasm,--pd,"__UVISION_VERSION SETA 543" -Wa,armasm,--pd,"STM32F407xx SETA 1" -Wa,armasm,--pd,"_RTE_ SETA 1"-o ./objects/startup_stm32f407xx.o)
-F (RTE/Device/STM32F407VGTx/system_stm32f4xx.c)(0x698F6E57)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-D__EVAL -gdwarf-4 -O0 -ffunction-sections -Wall -Wextra -Wno-packed -Wno-reserved-id-macro -Wno-unused-macros -Wno-documentation-unknown-command -Wno-documentation -Wno-license-management -Wno-parentheses-equality -Wno-reserved-identifier-I./RTE/_Target_1-I"C:/Users/Najd Ben Saad/AppData/Local/Arm/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include"-I"C:/Users/Najd Ben Saad/AppData/Local/Arm/Packs/Keil/STM32F4xx_DFP/2.17.1/Drivers/CMSIS/Device/ST/STM32F4xx/Include"-D__UVISION_VERSION="543" -DSTM32F407xx -D_RTE_-o ./objects/system_stm32f4xx.o -MMD)
-I (C:\Users\Najd Ben Saad\AppData\Local\Arm\Packs\Keil\STM32F4xx_DFP\2.17.1\Drivers\CMSIS\Device\ST\STM32F4xx\Include\stm32f4xx.h)(0x698F6E57)
-I (C:\Users\Najd Ben Saad\AppData\Local\Arm\Packs\Keil\STM32F4xx_DFP\2.17.1\Drivers\CMSIS\Device\ST\STM32F4xx\Include\stm32f407xx.h)(0x698F6E57)
-I (C:\Users\Najd Ben Saad\AppData\Local\Arm\Packs\ARM\CMSIS\6.3.0\CMSIS\Core\Include\core_cm4.h)(0x698F6EF5)
-I (C:\Users\Najd Ben Saad\AppData\Local\Arm\Packs\Keil\STM32F4xx_DFP\2.17.1\Drivers\CMSIS\Device\ST\STM32F4xx\Include\system_stm32f4xx.h)(0x698F6E57)
