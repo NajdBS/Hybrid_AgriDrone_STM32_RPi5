@@ -17,15 +17,7 @@ Bienvenue sur le projet de Drone Agricole Hybride ! 🌾
 **🇫🇷 Français :** Ce projet combine la fiabilité des contrôleurs de vol temps réel (STM32) avec l'intelligence des micro-ordinateurs (Raspberry Pi 5) pour l'agriculture de précision. Le drone se stabilise par vision (ArUco) et récolte les données de balises au sol.
 
 <p align="center">
-  <img src="Docs/assets/global_drone.jpg" alt="Drone" width="300">
-</p>
-
-<p align="center">
-  <video src="Docs/assets/drone_final_test.mp4" width="300" autoplay loop muted playsinline></video>
-</p>
-
-<p align="center">
-  <img src="Docs/assets/gcs_dashboard.jpg" alt="GCS" width="300">
+  <img src="Docs/assets/global_drone5.jpg" alt="Drone" width="300">
 </p>
 
 ### ✨ Key Features / Points Forts
@@ -33,10 +25,6 @@ Bienvenue sur le projet de Drone Agricole Hybride ! 🌾
 * 🧠 **Dual-brain architecture / Architecture à double cerveau :** STM32 + Raspberry Pi 5.
 * 👁️ **Visual Positioning / Positionnement Visuel :** ArUco marker tracking / *Suivi de marqueurs ArUco.*
 * 📡 **Wireless Telemetry / Télémétrie sans fil :** Zigbee & Web GCS.
-
-<p align="center">
-  <img src="Docs/assets/ground_beacon.jpg" alt="Beacon" width="300">
-</p>
 
 ---
 
