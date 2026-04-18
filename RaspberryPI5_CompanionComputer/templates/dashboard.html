@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GCS - Drone Control Station</title>
+    <style>
+        body { background: #0f0f0f; color: #eee; font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 20px; }
+        
+        /* Layout principal (Gauche / Droite) */
+        .main-layout { display: flex; max-width: 1400px; margin: 0 auto; gap: 30px; }
+        
+        /* COLONNE GAUCHE : Caméra + Terminal */
+        .left-col { flex: 2; display: flex; flex-direction: column; gap: 20px; }
+        
+        .video-container { background: #000; border: 2px solid #333; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
+        .video-header { background: #1a1a1a; padding: 12px 20px; font-weight: bold; color: #ff4444; border-bottom: 2px solid #333; letter-spacing: 2px; font-size: 0.9em; display: flex; align-items: center; gap: 10px;}
+        .video-container img { width: 100%; display: block; }
+        
+        /* Point rouge clignotant pour le style "Live" */
+        .live-dot { height: 10px; width: 10px; background-color: #ff4444; border-radius: 50%; display: inline-block; animation: blinker 1.5s linear infinite; }
+        @keyframes blinker { 50% { opacity: 0; } }
+
+        .terminal-container { background: #111; border: 2px solid #333; border-radius: 12px; overflow: hidden; height: 250px; display: flex; flex-direction: column; }
+        .terminal-header { background: #222; padding: 8px 15px; font-size: 0.9em; font-weight: bold; color: #aaa; border-bottom: 1px solid #333; }
+        .terminal-output { flex: 1; padding: 15px; overflow-y: auto; font-family: 'Courier New', Courier, monospace; font-size: 0.9em; color: #00ff41; line-height: 1.5; }
+
+        /* COLONNE DROITE : Menu */
+        .right-col { flex: 1; display: flex; flex-direction: column; gap: 20px; min-width: 350px; }
+        
+        .card { background: #1a1a1a; border: 1px solid #333; border-radius: 12px; padding: 20px; }
+        h2 { color: #00d2ff; margin-top: 0; font-size: 1.2em; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+
+        .data-item { background: #252525; padding: 15px; border-radius: 8px; border-left: 5px solid #444; }
+        .data-item label { display: block; font-size: 0.85em; color: #888; margin-bottom: 5px; font-weight: bold; letter-spacing: 1px;}
+        
+        /* Boutons de Mode */
+        .mode-switch { display: flex; gap: 10px; margin-top: 10px; }
+        .mode-switch button { flex: 1; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; background: #333; color: #888; }
+        #btn-manual.active { background: #d9534f; color: white; }
+        #btn-auto.active { background: #28a745; color: white; }
+
+        /* D-PAD Override */
+        .controls-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
+        .controls-grid button { aspect-ratio: 1/1; border: none; border-radius: 8px; background: #2a2a2a; color: white; font-weight: bold; cursor: pointer; transition: 0.1s;}
+        .controls-grid button:active { background: #444; transform: scale(0.95); }
+        .btn-stop { background: #b52b27 !important; }
+        .btn-hidden { visibility: hidden; }
+    </style>
+</head>
+<body>
+
+<h1 style="text-align:center; color:#00d2ff; margin-bottom:20px;">🛰️ DRONE COMMAND CENTER</h1>
+
+<div class="main-layout">
+    <div class="left-col">
+        <div class="video-container">
+            <div class="video-header">
+                <span class="live-dot"></span> LIVE CAMERA FEED
+            </div>
+            <img src="{{ url_for('video_feed') }}">
+        </div>
+        
+        <div class="terminal-container">
+            <div class="terminal-header">System Events & Data Logs</div>
+            <div id="terminal-output" class="terminal-output">
+                </div>
+        </div>
+    </div>
+
+    <div class="right-col">
+        <div class="card">
+            <h2>System Status</h2>
+            <div class="data-item" id="mode-border" style="border-left-color: #d9534f; margin-bottom: 0;">
+                <label>FLIGHT MODE</label>
+                <span id="txt-mode" style="color:white; font-size: 1.8em; font-weight: bold;">MANUAL</span>
+            </div>
+            </div>
+
+        <div class="card">
+            <h2>Operation Mode</h2>
+            <div class="mode-switch">
+                <button id="btn-manual" onclick="setMode('MANUAL')" class="active">MANUAL LOCK</button>
+                <button id="btn-auto" onclick="setMode('AUTO')">AUTO PILOT</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Manual Override</h2>
+            <div class="controls-grid">
+                <div class="btn-hidden"></div>
+                <button onclick="send('F')">FORWARD</button>
+                <div class="btn-hidden"></div>
+                
+                <button onclick="send('L')">LEFT</button>
+                <button class="btn-stop" onclick="send('C')">STOP</button>
+                <button onclick="send('R')">RIGHT</button>
+                
+                <div class="btn-hidden"></div>
+                <button onclick="send('B')">BACKWARD</button>
+                <div class="btn-hidden"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="card">
+    <h2>Engine Control</h2>
+    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+        <button id="btn-arm" onclick="motor('arm')" style="flex:1; background:#d9534f; color:white; font-weight:bold; padding:10px; border-radius:5px; border:none;">ARM</button>
+        <button id="btn-disarm" onclick="motor('disarm')" style="flex:1; background:#333; color:white; font-weight:bold; padding:10px; border-radius:5px; border:none;">DISARM</button>
+    </div>
+    <div style="display: flex; gap: 10px;">
+        <button onclick="motor('up')" style="flex:1; background:#28a745; color:white; font-weight:bold; padding:10px; border-radius:5px; border:none;">THROTTLE +</button>
+        <button onclick="motor('down')" style="flex:1; background:#f0ad4e; color:white; font-weight:bold; padding:10px; border-radius:5px; border:none;">THROTTLE -</button>
+    </div>
+</div>
+
+<script>
+    function motor(action) {
+        fetch(`/api/motors/${action}`, {method: 'POST'});
+    }
+    function setMode(m) {
+        fetch(`/api/mode/${m}`, {method: 'POST'})
+            .then(r => r.json())
+            .then(data => { if(data.status === 'error') alert(data.message); });
+    }
+
+    function send(c) {
+        fetch(`/api/command/${c}`, {method: 'POST'});
+    }
+
+    let lastLogLine = "";
+
+    // TELEMETRY REFRESH LOOP
+    setInterval(() => {
+        fetch('/api/telemetry').then(r => r.json()).then(d => {
+            // Mettre à jour le mode
+            document.getElementById('txt-mode').innerText = d.mode;
+
+            // Couleurs de l'interface
+            const btnM = document.getElementById('btn-manual');
+            const btnA = document.getElementById('btn-auto');
+            const border = document.getElementById('mode-border');
+
+            if(d.mode === 'AUTO') {
+                btnA.classList.add('active'); btnM.classList.remove('active');
+                border.style.borderLeftColor = '#28a745';
+            } else {
+                btnM.classList.add('active'); btnA.classList.remove('active');
+                border.style.borderLeftColor = '#d9534f';
+            }
+
+            // Mettre à jour le Terminal de logs (Humidité, Température, etc. s'afficheront ici)
+            if (d.logs && d.logs.length > 0) {
+                const currentLastLine = d.logs[d.logs.length - 1];
+                if (currentLastLine !== lastLogLine) {
+                    const term = document.getElementById('terminal-output');
+                    term.innerHTML = d.logs.join('<br>');
+                    term.scrollTop = term.scrollHeight; // Scroll vers le bas
+                    lastLogLine = currentLastLine;
+                }
+            }
+        });
+    }, 500);
+</script>
+
+</body>
+</html>
