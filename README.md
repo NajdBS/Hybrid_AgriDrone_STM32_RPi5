@@ -4,8 +4,8 @@ Welcome to the Hybrid Agricultural Drone project! 🌾
 Bienvenue sur le projet de Drone Agricole Hybride ! 🌾
 
 <p align="center">
-  <a href="README_fr.md"><strong>🇫🇷 Lire la documentation technique en Français</strong></a> • 
-  <a href="README_en.md"><strong>🇬🇧 Read the full technical documentation in English</strong></a>
+  <a href="README_en.md"><strong>🇬🇧 Read the full technical documentation in English</strong></a> •
+  <a href="README_fr.md"><strong>🇫🇷 Lire la documentation technique en Français</strong></a> 
 </p>
 
 ---
