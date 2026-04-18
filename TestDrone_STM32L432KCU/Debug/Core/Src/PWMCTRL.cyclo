@@ -1,0 +1,10 @@
+../Core/Src/PWMCTRL.c:28:23:clamp	3
+../Core/Src/PWMCTRL.c:37:24:command_to_pwm	2
+../Core/Src/PWMCTRL.c:46:6:ESC_Init	1
+../Core/Src/PWMCTRL.c:67:6:ESC_Calibrate	1
+../Core/Src/PWMCTRL.c:87:6:ESC_Arm	1
+../Core/Src/PWMCTRL.c:92:6:ESC_Disarm	1
+../Core/Src/PWMCTRL.c:98:6:ESC_UpdateCommands	2
+../Core/Src/PWMCTRL.c:151:6:ESC_SetSpeed	2
+../Core/Src/PWMCTRL.c:179:6:ESC_EmergencyStop	1
+../Core/Src/PWMCTRL.c:188:9:ESC_SafetyCheck	3
