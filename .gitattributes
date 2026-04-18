@@ -1,0 +1,5 @@
+Drivers/* linguist-vendored
+Middlewares/* linguist-vendored
+*.h linguist-documentation
+
+*.py linguist-detectable=true
