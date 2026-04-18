@@ -1,0 +1,15 @@
+# This is an example!!!
+
+[Unit]
+Description=Drone GCS Server
+After=network.target
+
+[Service]
+User=pi
+WorkingDirectory=/home/pi/AgriDrone_Project/RPi_CompanionComputer
+# The use of libcamerify is absolutely required here
+ExecStart=/usr/bin/libcamerify /home/pi/venv/bin/python3 src/app.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
