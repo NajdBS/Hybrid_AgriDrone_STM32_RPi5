@@ -47,6 +47,15 @@ Communication between the beacon and the drone uses UART. While BLE requires no 
 2. **Independent Testing:** Once configured, modules were tested with a terminal to verify wireless transmission of simulated frames (e.g., `CH1=45 Temp=24.50`).
 
 ---
+## 🧩 Hardware Integration: Custom STM32 Shield
+
+To ensure optimal flight stability, the inertial sensor could not simply be placed on a breadboard or attached with loose wires. *(See the image `nucleo_sensor_shield.jpg`)*
+
+We designed a **custom Shield (carrier board)** for the STM32 Nucleo. This PCB serves two critical functions:
+1. **Mechanical mounting of the MPU6050:** It provides a rigid I2C interface perfectly aligned with the drone's center of gravity, thereby limiting parasitic vibrations and sensor drift.
+2. **Communication routing:** It centralizes connections to the various modules (I2C for the IMU, UART for telemetry).
+
+> ⚠️ **Engineering Note (Hardware Errata):** > The schematic for this shield corresponds to PCB version V1.0, which contains a pin mapping error on the UART2 interface. During the final assembly of the drone, UART2 (used for communication with the Raspberry Pi) had to be manually re-routed to the correct physical pins on the Nucleo.
 
 ## 🛠️ Deployment & Automation
 
