@@ -57,6 +57,14 @@ We designed a **custom Shield (carrier board)** for the STM32 Nucleo. This PCB s
 
 > ⚠️ **Engineering Note (Hardware Errata):** > The schematic for this shield corresponds to PCB version V1.0, which contains a pin mapping error on the UART2 interface. During the final assembly of the drone, UART2 (used for communication with the Raspberry Pi) had to be manually re-routed to the correct physical pins on the Nucleo.
 
+## 📷 Camera Integration (Downward Vision)
+
+The Raspberry Pi Camera (Module v2) is mounted **under the drone chassis**, with a 90° downward orientation (Nadir view). *(Excitement during the build process might explain the total absence of photos from the underside! xD)*
+
+This configuration is critical for the assisted navigation system:
+1. **Hardware Setup:** The camera connects directly to the Raspberry Pi 5 via a ribbon cable. Vibration dampeners (rubber standoffs) are used to isolate the sensor from motor vibrations.
+2. **Software Function:** The video feed is analyzed in real-time by the OpenCV algorithm to detect ArUco marker positions. These coordinates are used to send trajectory corrections (X, Y) to the STM32 flight controller.
+
 ## 🛠️ Deployment & Automation
 
 ### 💡 Workflow Tips (Headless & Transfer)
