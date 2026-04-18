@@ -61,11 +61,13 @@ La communication entre la balise au sol et le drone repose sur une liaison UART.
 ### Automatisation du Système
 1. **Création du Point d'Accès Wi-Fi (Hotspot) :**
    La RPi 5 crée son propre réseau pour être pilotée en plein champ :
-   exemple:
+   
+   Exemple :
+   
    ```bash
    sudo nmcli device wifi hotspot ssid Drone_GCS password drone1234
    sudo nmcli connection modify Hotspot connection.autoconnect yes
-2. **Automatisation (Service Systemd) :** Un service système (`drone.service`) gère le lancement automatique du programme au démarrage.
+3. **Automatisation (Service Systemd) :** Un service système (`drone.service`) gère le lancement automatique du programme au démarrage.
    - Ce service assure la résilience du système : en cas de crash, l'application est relancée automatiquement, garantissant une disponibilité constante du flux vidéo et de la télémétrie dès la mise sous tension de la batterie.
 
 # 👨‍💻 Auteur
