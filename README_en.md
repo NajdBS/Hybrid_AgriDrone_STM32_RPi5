@@ -1,8 +1,3 @@
----
-
-### 🇬🇧 Fichier : `README.md`
-
-```markdown
 # 🚁 Hybrid_AgriUAV_STM32_RPi5
 
 > **Note :** 🇫🇷 [Lire la documentation en français](README_fr.md)
@@ -66,11 +61,13 @@ Communication between the beacon and the drone uses UART. While BLE requires no 
 ### System Automation
 1. **Wi-Fi Hotspot Creation:**
    The RPi 5 generates its own network for field operation:
-   example:
+   
+   Example :
+   
    ```bash
    sudo nmcli device wifi hotspot ssid Drone_GCS password drone1234
    sudo nmcli connection modify Hotspot connection.autoconnect yes
-2. **Automation (Systemd Service):** A system service (`drone.service`) handles the automatic execution of the program at boot time.
+3. **Automation (Systemd Service):** A system service (`drone.service`) handles the automatic execution of the program at boot time.
    - This service ensures system resilience: in the event of a crash, the application restarts automatically, ensuring continuous availability of the video stream and telemetry as soon as the battery is connected.
 
 # 👨‍💻 Author
